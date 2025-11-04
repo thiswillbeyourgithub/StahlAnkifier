@@ -2,6 +2,7 @@
 # dependencies = [
 #   "fire",
 #   "pymupdf",
+#   "beautifulsoup4",
 # ]
 # ///
 
@@ -19,6 +20,7 @@ from typing import Any
 
 import fire
 import fitz  # PyMuPDF
+from bs4 import BeautifulSoup
 
 
 def parse_pdf(pdf_path: str) -> None:
@@ -64,14 +66,18 @@ def parse_pdf(pdf_path: str) -> None:
         for level, section_title, page_num in toc_raw
     ]
 
-    # Extract text content from each page
+    # Extract HTML content from each page using get_textpage().extractHTML()
+    # This preserves more structural information than plain text extraction
     # Store as dict with page number as key for easy access
     page_contents = {}
     for page_num in range(len(doc)):
         page = doc[page_num]
-        # Extract text from page - this gets all text in reading order
-        page_text = page.get_text()
-        page_contents[page_num + 1] = page_text  # Use 1-based indexing for readability
+        # Extract HTML from page - this preserves formatting and structure
+        textpage = page.get_textpage()
+        html_content = textpage.extractHTML()
+        # Parse HTML with BeautifulSoup for easier manipulation
+        soup = BeautifulSoup(html_content, "html.parser")
+        page_contents[page_num + 1] = soup  # Use 1-based indexing for readability
 
     # Store all extracted data for inspection
     pdf_data = {
@@ -129,10 +135,10 @@ def parse_pdf(pdf_path: str) -> None:
     # Variables available for inspection:
     # - title: PDF title
     # - table_of_contents: List of TOC entries with level, title, and page
-    # - page_contents: Dict of page numbers -> text content
+    # - page_contents: Dict of page numbers -> BeautifulSoup objects with HTML content
     # - pdf_data: Complete dict with all extracted information
     # - metadata: Full PDF metadata dict
-    # - drug_page: Dict mapping drug names (uppercase) to list of page contents
+    # - drug_page: Dict mapping drug names (uppercase) to list of BeautifulSoup page contents
     breakpoint()
 
 
