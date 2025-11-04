@@ -64,7 +64,7 @@ def _merge_empty_consecutive(d: dict, is_empty: callable) -> dict:
 
 
 def _merge_empty_headers(
-    drug_dict: Dict[str, Dict[str, List[str]]]
+    drug_dict: Dict[str, Dict[str, List[str]]],
 ) -> Dict[str, Dict[str, List[str]]]:
     """
     Merge consecutive headers that have no content.
