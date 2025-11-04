@@ -23,6 +23,80 @@ import fitz  # PyMuPDF
 from bs4 import BeautifulSoup, Tag
 
 
+def _merge_empty_consecutive(d: dict, is_empty: callable) -> dict:
+    """
+    Merge consecutive dict entries where first entry is empty.
+
+    When two headers are next to each other and the first one has no content,
+    they are merged by concatenating their names with a space.
+
+    Parameters
+    ----------
+    d : dict
+        Dictionary to clean
+    is_empty : callable
+        Function that returns True if a value is considered empty
+
+    Returns
+    -------
+    dict
+        New dict with empty entries merged
+    """
+    result = {}
+    keys = list(d.keys())
+    i = 0
+
+    while i < len(keys):
+        key = keys[i]
+        value = d[key]
+
+        # If this entry is empty and there's a next entry, merge them
+        if is_empty(value) and i + 1 < len(keys):
+            next_key = keys[i + 1]
+            merged_key = f"{key} {next_key}"
+            result[merged_key] = d[next_key]
+            i += 2  # Skip both entries
+        else:
+            result[key] = value
+            i += 1
+
+    return result
+
+
+def _merge_empty_headers(
+    drug_dict: Dict[str, Dict[str, List[str]]]
+) -> Dict[str, Dict[str, List[str]]]:
+    """
+    Merge consecutive headers that have no content.
+
+    If two H1 or H2 headers are next to each other and the first one has no content,
+    they are merged and their names concatenated with a space.
+
+    Parameters
+    ----------
+    drug_dict : Dict[str, Dict[str, List[str]]]
+        Hierarchical dict with H1 headers as keys
+
+    Returns
+    -------
+    Dict[str, Dict[str, List[str]]]
+        Cleaned dict with merged headers
+    """
+    # First merge H2 headers within each H1
+    # H2 is empty if it has no content (empty list)
+    h1_cleaned = {}
+    for h1_key, h2_dict in drug_dict.items():
+        h1_cleaned[h1_key] = _merge_empty_consecutive(h2_dict, lambda v: not v)
+
+    # Then merge H1 headers
+    # H1 is empty if it has no H2s or all H2s are empty
+    result = _merge_empty_consecutive(
+        h1_cleaned, lambda v: not v or all(not content for content in v.values())
+    )
+
+    return result
+
+
 def parse_drug_pages(
     pages_content: List[BeautifulSoup],
 ) -> Dict[str, Dict[str, List[str]]]:
@@ -87,6 +161,10 @@ def parse_drug_pages(
             if current_h1 and current_h2:
                 # Store the HTML content as a string
                 drug_dict[current_h1][current_h2].append(str(p))
+
+    # Merge consecutive headers where the first one has no content
+    # This handles cases where headers appear back-to-back without content between them
+    drug_dict = _merge_empty_headers(drug_dict)
 
     return drug_dict
 
