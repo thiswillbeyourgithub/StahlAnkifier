@@ -86,6 +86,21 @@ def parse_pdf(pdf_path: str) -> None:
     # Close the document
     doc.close()
 
+    # Extract drug pages from table of contents
+    # Drug chapters are identified by titles ending with an uppercase word
+    # Example: '26.0_pp_125_128_BUSPIRONE' -> drug='BUSPIRONE', page=139
+    drug_page = {}
+    for item in table_of_contents:
+        title_text = item["title"]
+        # Split by underscore to get segments, take the last one
+        segments = title_text.split("_")
+        if segments:
+            last_segment = segments[-1]
+            # Check if the last segment is all uppercase and not empty
+            # This indicates a drug name (e.g., BUSPIRONE, ASPIRIN, etc.)
+            if last_segment and last_segment.isupper():
+                drug_page[last_segment] = item["page"]
+
     # Enter debugger to allow investigation of extracted data
     # Variables available for inspection:
     # - title: PDF title
@@ -93,6 +108,7 @@ def parse_pdf(pdf_path: str) -> None:
     # - page_contents: Dict of page numbers -> text content
     # - pdf_data: Complete dict with all extracted information
     # - metadata: Full PDF metadata dict
+    # - drug_page: Dict mapping drug names (uppercase) to their page numbers
     breakpoint()
 
 
