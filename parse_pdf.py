@@ -149,20 +149,20 @@ def parse_drug_pages(
             # This is an H2 header - extract just the bold text as the header
             bold_tag = p.find("b")
             h2_text = bold_tag.get_text(strip=True)
-            
+
             # Skip if it's just whitespace or very short
             if h2_text and len(h2_text) > 1:
                 current_h2 = h2_text
                 if current_h1 and current_h2:
                     if current_h2 not in drug_dict[current_h1]:
                         drug_dict[current_h1][current_h2] = []
-                    
+
                     # Check if there's content after the bold tag in the same paragraph
                     # Create a copy and remove the bold tag to get remaining content
                     p_copy = BeautifulSoup(str(p), "html.parser").p
                     if p_copy and p_copy.find("b"):
                         p_copy.find("b").decompose()  # Remove the bold tag
-                        
+
                         # Check if there's any remaining text content
                         remaining_text = p_copy.get_text(strip=True)
                         if remaining_text:
