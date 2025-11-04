@@ -146,14 +146,28 @@ def parse_drug_pages(
         # Check if this is an H2 header (bold, 10pt font, dark text)
         # H2 headers have bold tag and 10pt font size but NOT white color
         if "font-size:10.0pt" in style and p.find("b"):
-            # This is an H2 header
-            text = p.get_text(strip=True)
+            # This is an H2 header - extract just the bold text as the header
+            bold_tag = p.find("b")
+            h2_text = bold_tag.get_text(strip=True)
+            
             # Skip if it's just whitespace or very short
-            if text and len(text) > 1:
-                current_h2 = text
+            if h2_text and len(h2_text) > 1:
+                current_h2 = h2_text
                 if current_h1 and current_h2:
                     if current_h2 not in drug_dict[current_h1]:
                         drug_dict[current_h1][current_h2] = []
+                    
+                    # Check if there's content after the bold tag in the same paragraph
+                    # Create a copy and remove the bold tag to get remaining content
+                    p_copy = BeautifulSoup(str(p), "html.parser").p
+                    if p_copy and p_copy.find("b"):
+                        p_copy.find("b").decompose()  # Remove the bold tag
+                        
+                        # Check if there's any remaining text content
+                        remaining_text = p_copy.get_text(strip=True)
+                        if remaining_text:
+                            # Add the modified paragraph (without header) as content
+                            drug_dict[current_h1][current_h2].append(str(p_copy))
             continue
 
         # This is regular content - add to current section if we have both H1 and H2
