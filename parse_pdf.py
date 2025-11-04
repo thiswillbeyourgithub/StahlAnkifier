@@ -286,6 +286,36 @@ def parse_pdf(pdf_path: str) -> None:
         # Parse the combined content
         drug_content[drug_name] = parse_drug_pages(combined_soup)
 
+    # Create Anki cards from the parsed drug content
+    # Each card has: Drug, Section (H1), Question (H2), Answer (concatenated H2 content), Tags
+    cards: List[Dict[str, Any]] = []
+    for drug_name, h1_dict in drug_content.items():
+        for h1_header, h2_dict in h1_dict.items():
+            for h2_header, content_list in h2_dict.items():
+                # Verify content_list is a list, not a dict (would mean we missed a level)
+                if not isinstance(content_list, list):
+                    raise ValueError(
+                        f"Expected list for content, got {type(content_list)} for "
+                        f"{drug_name} -> {h1_header} -> {h2_header}"
+                    )
+
+                # Concatenate all HTML content into a single string
+                combined_html = "".join(content_list)
+
+                # Use BeautifulSoup to convert HTML to human-readable text
+                soup = BeautifulSoup(combined_html, "html.parser")
+                answer_text = soup.get_text(separator=" ", strip=True)
+
+                # Create the card
+                card = {
+                    "Drug": drug_name,
+                    "Section": h1_header,
+                    "Question": h2_header,
+                    "Answer": answer_text,
+                    "Tags": [f"Stahl::{drug_name}::{h1_header}"],
+                }
+                cards.append(card)
+
     # Enter debugger to allow investigation of extracted data
     # Variables available for inspection:
     # - title: PDF title
@@ -295,6 +325,7 @@ def parse_pdf(pdf_path: str) -> None:
     # - metadata: Full PDF metadata dict
     # - drug_page: Dict mapping drug names (uppercase) to list of BeautifulSoup page contents
     # - drug_content: Dict mapping drug names to hierarchical content structure (H1 -> H2 -> HTML)
+    # - cards: List of dicts ready to be converted to Anki cards
     breakpoint()
 
 
