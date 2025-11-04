@@ -23,7 +23,9 @@ import fitz  # PyMuPDF
 from bs4 import BeautifulSoup, Tag
 
 
-def parse_drug_pages(pages_content: List[BeautifulSoup]) -> Dict[str, Dict[str, List[str]]]:
+def parse_drug_pages(
+    pages_content: List[BeautifulSoup],
+) -> Dict[str, Dict[str, List[str]]]:
     """
     Parse drug pages into hierarchical structure.
 
@@ -43,34 +45,34 @@ def parse_drug_pages(pages_content: List[BeautifulSoup]) -> Dict[str, Dict[str, 
         and their HTML content as values
     """
     drug_dict: Dict[str, Dict[str, List[str]]] = {}
-    
+
     for page_soup in pages_content:
         # Find all paragraphs - these contain headers and content
-        paragraphs = page_soup.find_all('p')
-        
+        paragraphs = page_soup.find_all("p")
+
         current_h1: str | None = None
         current_h2: str | None = None
-        
+
         for p in paragraphs:
             # Look for span elements that might indicate headers
-            span = p.find('span')
+            span = p.find("span")
             if not span:
                 continue
-                
-            style = span.get('style', '')
-            
+
+            style = span.get("style", "")
+
             # Check if this is an H1 header (white text color = colored background)
-            if 'color:#ffffff' in style.lower():
+            if "color:#ffffff" in style.lower():
                 # This is an H1 header
                 current_h1 = span.get_text(strip=True)
                 if current_h1 not in drug_dict:
                     drug_dict[current_h1] = {}
                 current_h2 = None
                 continue
-            
+
             # Check if this is an H2 header (bold, 10pt font, dark text)
             # H2 headers have bold tag and 10pt font size but NOT white color
-            if 'font-size:10.0pt' in style and p.find('b'):
+            if "font-size:10.0pt" in style and p.find("b"):
                 # This is an H2 header
                 text = p.get_text(strip=True)
                 # Skip if it's just whitespace or very short
@@ -80,12 +82,12 @@ def parse_drug_pages(pages_content: List[BeautifulSoup]) -> Dict[str, Dict[str, 
                         if current_h2 not in drug_dict[current_h1]:
                             drug_dict[current_h1][current_h2] = []
                 continue
-            
+
             # This is regular content - add to current section if we have both H1 and H2
             if current_h1 and current_h2:
                 # Store the HTML content as a string
                 drug_dict[current_h1][current_h2].append(str(p))
-    
+
     return drug_dict
 
 
