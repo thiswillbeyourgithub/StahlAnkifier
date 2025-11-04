@@ -98,7 +98,7 @@ def _merge_empty_headers(
 
 
 def parse_drug_pages(
-    pages_content: List[BeautifulSoup],
+    combined_soup: BeautifulSoup,
 ) -> Dict[str, Dict[str, List[str]]]:
     """
     Parse drug pages into hierarchical structure.
@@ -109,8 +109,8 @@ def parse_drug_pages(
 
     Parameters
     ----------
-    pages_content : List[BeautifulSoup]
-        List of BeautifulSoup objects representing drug pages
+    combined_soup : BeautifulSoup
+        BeautifulSoup object containing concatenated HTML from all drug pages
 
     Returns
     -------
@@ -120,47 +120,46 @@ def parse_drug_pages(
     """
     drug_dict: Dict[str, Dict[str, List[str]]] = {}
 
-    for page_soup in pages_content:
-        # Find all paragraphs - these contain headers and content
-        paragraphs = page_soup.find_all("p")
+    # Find all paragraphs - these contain headers and content
+    paragraphs = combined_soup.find_all("p")
 
-        current_h1: str | None = None
-        current_h2: str | None = None
+    current_h1: str | None = None
+    current_h2: str | None = None
 
-        for p in paragraphs:
-            # Look for span elements that might indicate headers
-            span = p.find("span")
-            if not span:
-                continue
+    for p in paragraphs:
+        # Look for span elements that might indicate headers
+        span = p.find("span")
+        if not span:
+            continue
 
-            style = span.get("style", "")
+        style = span.get("style", "")
 
-            # Check if this is an H1 header (white text color = colored background)
-            if "color:#ffffff" in style.lower():
-                # This is an H1 header
-                current_h1 = span.get_text(strip=True)
-                if current_h1 not in drug_dict:
-                    drug_dict[current_h1] = {}
-                current_h2 = None
-                continue
+        # Check if this is an H1 header (white text color = colored background)
+        if "color:#ffffff" in style.lower():
+            # This is an H1 header
+            current_h1 = span.get_text(strip=True)
+            if current_h1 not in drug_dict:
+                drug_dict[current_h1] = {}
+            current_h2 = None
+            continue
 
-            # Check if this is an H2 header (bold, 10pt font, dark text)
-            # H2 headers have bold tag and 10pt font size but NOT white color
-            if "font-size:10.0pt" in style and p.find("b"):
-                # This is an H2 header
-                text = p.get_text(strip=True)
-                # Skip if it's just whitespace or very short
-                if text and len(text) > 1:
-                    current_h2 = text
-                    if current_h1 and current_h2:
-                        if current_h2 not in drug_dict[current_h1]:
-                            drug_dict[current_h1][current_h2] = []
-                continue
+        # Check if this is an H2 header (bold, 10pt font, dark text)
+        # H2 headers have bold tag and 10pt font size but NOT white color
+        if "font-size:10.0pt" in style and p.find("b"):
+            # This is an H2 header
+            text = p.get_text(strip=True)
+            # Skip if it's just whitespace or very short
+            if text and len(text) > 1:
+                current_h2 = text
+                if current_h1 and current_h2:
+                    if current_h2 not in drug_dict[current_h1]:
+                        drug_dict[current_h1][current_h2] = []
+            continue
 
-            # This is regular content - add to current section if we have both H1 and H2
-            if current_h1 and current_h2:
-                # Store the HTML content as a string
-                drug_dict[current_h1][current_h2].append(str(p))
+        # This is regular content - add to current section if we have both H1 and H2
+        if current_h1 and current_h2:
+            # Store the HTML content as a string
+            drug_dict[current_h1][current_h2].append(str(p))
 
     # Merge consecutive headers where the first one has no content
     # This handles cases where headers appear back-to-back without content between them
@@ -273,9 +272,19 @@ def parse_pdf(pdf_path: str) -> None:
 
     # Parse each drug's pages into hierarchical structure
     # The structure is: drug_name -> H1 header -> H2 header -> HTML content list
+    # Concatenate all page HTML for each drug first to ensure coherent nesting across pages
     drug_content: Dict[str, Dict[str, Dict[str, List[str]]]] = {}
     for drug_name, pages in drug_page.items():
-        drug_content[drug_name] = parse_drug_pages(pages)
+        # Concatenate HTML from all pages for this drug
+        combined_html = ""
+        for page_soup in pages:
+            combined_html += str(page_soup)
+        
+        # Parse the concatenated HTML as a single document
+        combined_soup = BeautifulSoup(combined_html, "html.parser")
+        
+        # Parse the combined content
+        drug_content[drug_name] = parse_drug_pages(combined_soup)
 
     # Enter debugger to allow investigation of extracted data
     # Variables available for inspection:
