@@ -114,7 +114,7 @@ def parse_pdf(pdf_path: str) -> None:
                         except ValueError:
                             # If conversion fails, skip this entry
                             continue
-                
+
                 # If we found a valid page range, extract content from all pages
                 if page_range_start is not None and page_range_end is not None:
                     # Collect content from all pages in the range
