@@ -109,20 +109,20 @@ def parse_pdf(pdf_path: str) -> None:
             if last_segment and last_segment.isupper():
                 # Start page is from the current TOC item
                 start_page = item["page"]
-                
+
                 # End page is the page before the next TOC item, or total pages if this is the last item
                 if idx + 1 < len(table_of_contents):
                     end_page = table_of_contents[idx + 1]["page"] - 1
                 else:
                     end_page = pdf_data["total_pages"]
-                
+
                 # Collect content from all pages in the range
                 pages_content = []
                 for page_num in range(start_page, end_page + 1):
                     # page_contents uses 1-based indexing
                     if page_num in page_contents:
                         pages_content.append(page_contents[page_num])
-                
+
                 drug_page[last_segment] = pages_content
 
     # Enter debugger to allow investigation of extracted data
