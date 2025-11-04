@@ -94,10 +94,11 @@ def parse_pdf(pdf_path: str) -> None:
 
     # Extract drug pages from table of contents
     # Drug chapters are identified by titles ending with an uppercase word
-    # Example: '26.0_pp_125_128_BUSPIRONE' -> drug='BUSPIRONE', pages=[content_125, content_126, content_127, content_128]
-    # The page range is extracted from the title format: pp_START_END
+    # The page range starts at the item's page and ends at the next section's page
+    # Example: '26.0_pp_125_128_BUSPIRONE' -> drug='BUSPIRONE'
+    # Pages are from item["page"] to next_item["page"] - 1
     drug_page = {}
-    for item in table_of_contents:
+    for idx, item in enumerate(table_of_contents):
         title_text = item["title"]
         # Split by underscore to get segments
         segments = title_text.split("_")
@@ -106,30 +107,23 @@ def parse_pdf(pdf_path: str) -> None:
             # Check if the last segment is all uppercase and not empty
             # This indicates a drug name (e.g., BUSPIRONE, ASPIRIN, etc.)
             if last_segment and last_segment.isupper():
-                # Extract page range from title segments (e.g., pp_125_128)
-                # Look for segments that match the pattern: pp, start_page, end_page
-                page_range_start = None
-                page_range_end = None
-                for i, segment in enumerate(segments):
-                    if segment == "pp" and i + 2 < len(segments):
-                        # Next two segments should be start and end page numbers
-                        try:
-                            page_range_start = int(segments[i + 1])
-                            page_range_end = int(segments[i + 2])
-                            break
-                        except ValueError:
-                            # If conversion fails, skip this entry
-                            continue
-
-                # If we found a valid page range, extract content from all pages
-                if page_range_start is not None and page_range_end is not None:
-                    # Collect content from all pages in the range
-                    pages_content = []
-                    for page_num in range(page_range_start, page_range_end + 1):
-                        # page_contents uses 1-based indexing
-                        if page_num in page_contents:
-                            pages_content.append(page_contents[page_num])
-                    drug_page[last_segment] = pages_content
+                # Start page is from the current TOC item
+                start_page = item["page"]
+                
+                # End page is the page before the next TOC item, or total pages if this is the last item
+                if idx + 1 < len(table_of_contents):
+                    end_page = table_of_contents[idx + 1]["page"] - 1
+                else:
+                    end_page = pdf_data["total_pages"]
+                
+                # Collect content from all pages in the range
+                pages_content = []
+                for page_num in range(start_page, end_page + 1):
+                    # page_contents uses 1-based indexing
+                    if page_num in page_contents:
+                        pages_content.append(page_contents[page_num])
+                
+                drug_page[last_segment] = pages_content
 
     # Enter debugger to allow investigation of extracted data
     # Variables available for inspection:
