@@ -279,10 +279,10 @@ def parse_pdf(pdf_path: str) -> None:
         combined_html = ""
         for page_soup in pages:
             combined_html += str(page_soup)
-        
+
         # Parse the concatenated HTML as a single document
         combined_soup = BeautifulSoup(combined_html, "html.parser")
-        
+
         # Parse the combined content
         drug_content[drug_name] = parse_drug_pages(combined_soup)
 
