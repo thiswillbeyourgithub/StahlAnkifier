@@ -318,7 +318,7 @@ def parse_pdf(pdf_path: str) -> None:
 
                 # Use BeautifulSoup to convert HTML to human-readable text
                 soup = BeautifulSoup(combined_html, "html.parser")
-                answer_text = soup.get_text(separator=" ", strip=True)
+                answer_text = soup.get_text(separator="\n", strip=True)
 
                 # Create the card
                 card = {
