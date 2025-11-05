@@ -394,7 +394,17 @@ def parse_pdf(pdf_path: str) -> None:
 
                 # Use BeautifulSoup to convert HTML to human-readable text
                 soup = BeautifulSoup(combined_html, "html.parser")
-                answer_text = soup.get_text(separator="\n", strip=True)
+                
+                # Special handling for different section types
+                # "Suggested Reading" sections don't use bullet points, so keep newlines
+                # Other sections use "•" bullets, so only add newlines before bullets
+                if h2_header == "Suggested Reading":
+                    answer_text = soup.get_text(separator="\n", strip=True)
+                else:
+                    # Get text without automatic separators
+                    answer_text = soup.get_text(separator="", strip=True)
+                    # Add newline before each bullet point (except at the start)
+                    answer_text = answer_text.replace("•", "\n•").lstrip("\n")
 
                 # Create the card
                 card = {
