@@ -215,9 +215,7 @@ def parse_pdf(pdf_path: str) -> None:
         raise ValueError(f"File must be a PDF, got: {pdf_file.suffix}")
 
     # Open the PDF document
-    logger.warning(
-        "Opening PDF file - this can take up to a minute for large PDFs..."
-    )
+    logger.warning("Opening PDF file - this can take up to a minute for large PDFs...")
     doc = fitz.open(pdf_path)
     logger.info(f"PDF opened successfully: {pdf_file.name}")
 
