@@ -179,17 +179,17 @@ def _clean_html_keep_formatting(html_content: str) -> str:
         Cleaned HTML with only formatting tags preserved
     """
     soup = BeautifulSoup(html_content, "html.parser")
-    
+
     # Tags to keep - these preserve useful formatting for Anki
     # Bold/strong, italic/emphasis, underline, links, line breaks, paragraphs
-    allowed_tags = {'b', 'strong', 'i', 'em', 'u', 'a', 'br', 'p', 'ul', 'ol', 'li'}
-    
+    allowed_tags = {"b", "strong", "i", "em", "u", "a", "br", "p", "ul", "ol", "li"}
+
     # Remove all tags except the allowed ones
     # unwrap() removes the tag but keeps its content
     for tag in soup.find_all():
         if tag.name not in allowed_tags:
             tag.unwrap()
-    
+
     return str(soup)
 
 
