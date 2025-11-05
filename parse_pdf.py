@@ -80,6 +80,8 @@ def _merge_empty_consecutive(d: dict, is_empty: callable) -> dict:
 
     When two headers are next to each other and the first one has no content,
     they are merged by concatenating their names with a space.
+    This process repeats iteratively until no more merges are possible,
+    handling cases where multi-line headers are split into 3+ separate entries.
 
     Parameters
     ----------
@@ -93,23 +95,33 @@ def _merge_empty_consecutive(d: dict, is_empty: callable) -> dict:
     dict
         New dict with empty entries merged
     """
-    result = {}
-    keys = list(d.keys())
-    i = 0
+    # Keep merging until no more changes occur
+    # This handles cases like multi-line headers split into 3+ parts
+    changed = True
+    result = d.copy()
+    
+    while changed:
+        changed = False
+        new_result = {}
+        keys = list(result.keys())
+        i = 0
 
-    while i < len(keys):
-        key = keys[i]
-        value = d[key]
+        while i < len(keys):
+            key = keys[i]
+            value = result[key]
 
-        # If this entry is empty and there's a next entry, merge them
-        if is_empty(value) and i + 1 < len(keys):
-            next_key = keys[i + 1]
-            merged_key = f"{key} {next_key}"
-            result[merged_key] = d[next_key]
-            i += 2  # Skip both entries
-        else:
-            result[key] = value
-            i += 1
+            # If this entry is empty and there's a next entry, merge them
+            if is_empty(value) and i + 1 < len(keys):
+                next_key = keys[i + 1]
+                merged_key = f"{key} {next_key}"
+                new_result[merged_key] = result[next_key]
+                i += 2  # Skip both entries
+                changed = True  # Mark that we made a change
+            else:
+                new_result[key] = value
+                i += 1
+        
+        result = new_result
 
     return result
 
