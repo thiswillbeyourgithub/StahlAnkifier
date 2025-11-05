@@ -27,6 +27,53 @@ from loguru import logger
 from tqdm import tqdm
 
 
+def _clean_page_headers(soup: BeautifulSoup, drug_name: str) -> BeautifulSoup:
+    """
+    Remove page headers from the first 0-3 paragraphs.
+
+    Headers to remove include:
+    - Page numbers (just a number)
+    - "(continued)" text
+    - The drug name in uppercase
+
+    This prevents these elements from appearing in Anki card answers.
+
+    Parameters
+    ----------
+    soup : BeautifulSoup
+        Page content to clean
+    drug_name : str
+        The drug name (in uppercase) to match against
+
+    Returns
+    -------
+    BeautifulSoup
+        Cleaned page content with headers removed
+    """
+    # Create a copy to avoid modifying the original
+    soup_copy = BeautifulSoup(str(soup), "html.parser")
+
+    # Find all paragraphs
+    paragraphs = soup_copy.find_all("p")
+
+    # Check first 0-3 paragraphs and remove if they match header patterns
+    for i in range(min(3, len(paragraphs))):
+        p = paragraphs[i]
+        text = p.get_text(strip=True)
+
+        # Check if this is a header we should remove:
+        # 1. Just a number (page counter)
+        # 2. "(continued)" indicator
+        # 3. Drug name in uppercase
+        if text.isdigit() or text.lower() == "(continued)" or text == drug_name:
+            p.decompose()  # Remove this paragraph
+        else:
+            # Stop checking once we hit a non-header paragraph
+            break
+
+    return soup_copy
+
+
 def _merge_empty_consecutive(d: dict, is_empty: callable) -> dict:
     """
     Merge consecutive dict entries where first entry is empty.
@@ -303,9 +350,11 @@ def parse_pdf(pdf_path: str) -> None:
     drug_content: Dict[str, Dict[str, Dict[str, List[str]]]] = {}
     for drug_name, pages in tqdm(drug_page.items(), desc="Parsing drugs"):
         # Concatenate HTML from all pages for this drug
+        # Clean page headers first to avoid them appearing in answers
         combined_html = ""
         for page_soup in pages:
-            combined_html += str(page_soup)
+            cleaned_soup = _clean_page_headers(page_soup, drug_name)
+            combined_html += str(cleaned_soup)
 
         # Parse the concatenated HTML as a single document
         combined_soup = BeautifulSoup(combined_html, "html.parser")
