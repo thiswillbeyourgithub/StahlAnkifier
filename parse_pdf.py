@@ -3,6 +3,8 @@
 #   "fire",
 #   "pymupdf",
 #   "beautifulsoup4",
+#   "loguru",
+#   "tqdm",
 # ]
 # ///
 
@@ -21,6 +23,8 @@ from typing import Any, Dict, List
 import fire
 import fitz  # PyMuPDF
 from bs4 import BeautifulSoup, Tag
+from loguru import logger
+from tqdm import tqdm
 
 
 def _merge_empty_consecutive(d: dict, is_empty: callable) -> dict:
@@ -211,9 +215,14 @@ def parse_pdf(pdf_path: str) -> None:
         raise ValueError(f"File must be a PDF, got: {pdf_file.suffix}")
 
     # Open the PDF document
+    logger.warning(
+        "Opening PDF file - this can take up to a minute for large PDFs..."
+    )
     doc = fitz.open(pdf_path)
+    logger.info(f"PDF opened successfully: {pdf_file.name}")
 
     # Extract metadata - title may be in metadata or empty
+    logger.info("Extracting metadata and table of contents...")
     metadata = doc.metadata
     title = metadata.get("title", "") or f"Untitled (from {pdf_file.name})"
 
@@ -224,12 +233,14 @@ def parse_pdf(pdf_path: str) -> None:
         {"level": level, "title": section_title, "page": page_num}
         for level, section_title, page_num in toc_raw
     ]
+    logger.info(f"Found {len(table_of_contents)} TOC entries")
 
     # Extract HTML content from each page using get_textpage().extractHTML()
     # This preserves more structural information than plain text extraction
     # Store as dict with page number as key for easy access
+    logger.info(f"Extracting HTML content from {len(doc)} pages...")
     page_contents = {}
-    for page_num in range(len(doc)):
+    for page_num in tqdm(range(len(doc)), desc="Extracting pages"):
         page = doc[page_num]
         # Extract HTML from page - this preserves formatting and structure
         textpage = page.get_textpage()
@@ -256,6 +267,7 @@ def parse_pdf(pdf_path: str) -> None:
     # The page range starts at the item's page and ends at the next section's page
     # Example: '26.0_pp_125_128_BUSPIRONE' -> drug='BUSPIRONE'
     # Pages are from item["page"] to next_item["page"] - 1
+    logger.info("Identifying drug pages from table of contents...")
     drug_page = {}
     for idx, item in enumerate(table_of_contents):
         title_text = item["title"]
@@ -284,11 +296,14 @@ def parse_pdf(pdf_path: str) -> None:
 
                 drug_page[last_segment] = pages_content
 
+    logger.info(f"Found {len(drug_page)} drugs to process")
+
     # Parse each drug's pages into hierarchical structure
     # The structure is: drug_name -> H1 header -> H2 header -> HTML content list
     # Concatenate all page HTML for each drug first to ensure coherent nesting across pages
+    logger.info("Parsing drug content into hierarchical structure...")
     drug_content: Dict[str, Dict[str, Dict[str, List[str]]]] = {}
-    for drug_name, pages in drug_page.items():
+    for drug_name, pages in tqdm(drug_page.items(), desc="Parsing drugs"):
         # Concatenate HTML from all pages for this drug
         combined_html = ""
         for page_soup in pages:
@@ -302,8 +317,9 @@ def parse_pdf(pdf_path: str) -> None:
 
     # Create Anki cards from the parsed drug content
     # Each card has: Drug, Section (H1), Question (H2), Answer (concatenated H2 content), Tags
+    logger.info("Creating Anki cards from parsed content...")
     cards: List[Dict[str, Any]] = []
-    for drug_name, h1_dict in drug_content.items():
+    for drug_name, h1_dict in tqdm(drug_content.items(), desc="Creating cards"):
         for h1_header, h2_dict in h1_dict.items():
             for h2_header, content_list in h2_dict.items():
                 # Verify content_list is a list, not a dict (would mean we missed a level)
@@ -329,6 +345,8 @@ def parse_pdf(pdf_path: str) -> None:
                     "Tags": [f"Stahl::{drug_name}::{h1_header}"],
                 }
                 cards.append(card)
+
+    logger.info(f"Created {len(cards)} Anki cards")
 
     # Enter debugger to allow investigation of extracted data
     # Variables available for inspection:
