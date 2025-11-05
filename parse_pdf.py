@@ -402,7 +402,9 @@ def parse_pdf(pdf_path: str) -> None:
                     "Section": h1_header,
                     "Question": h2_header,
                     "Answer": answer_text,
-                    "Tags": [f"Stahl::{drug_name.replace(' ', '_')}::{h1_header.replace(' ', '_')}"],
+                    "Tags": [
+                        f"Stahl::{drug_name.replace(' ', '_')}::{h1_header.replace(' ', '_')}"
+                    ],
                 }
                 cards.append(card)
 
