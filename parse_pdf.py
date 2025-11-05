@@ -161,6 +161,38 @@ def _merge_empty_headers(
     return result
 
 
+def _clean_html_keep_formatting(html_content: str) -> str:
+    """
+    Clean HTML by removing most tags while preserving formatting tags.
+
+    This removes structural tags like <div>, <span>, etc. but keeps
+    formatting tags like <b>, <i>, <a> that are useful in Anki cards.
+
+    Parameters
+    ----------
+    html_content : str
+        HTML content to clean
+
+    Returns
+    -------
+    str
+        Cleaned HTML with only formatting tags preserved
+    """
+    soup = BeautifulSoup(html_content, "html.parser")
+    
+    # Tags to keep - these preserve useful formatting for Anki
+    # Bold/strong, italic/emphasis, underline, links, line breaks, paragraphs
+    allowed_tags = {'b', 'strong', 'i', 'em', 'u', 'a', 'br', 'p', 'ul', 'ol', 'li'}
+    
+    # Remove all tags except the allowed ones
+    # unwrap() removes the tag but keeps its content
+    for tag in soup.find_all():
+        if tag.name not in allowed_tags:
+            tag.unwrap()
+    
+    return str(soup)
+
+
 def parse_drug_pages(
     combined_soup: BeautifulSoup,
 ) -> Dict[str, Dict[str, List[str]]]:
@@ -392,19 +424,9 @@ def parse_pdf(pdf_path: str) -> None:
                 # Concatenate all HTML content into a single string
                 combined_html = "".join(content_list)
 
-                # Use BeautifulSoup to convert HTML to human-readable text
-                soup = BeautifulSoup(combined_html, "html.parser")
-
-                # Special handling for different section types
-                # "Suggested Reading" sections don't use bullet points, so keep newlines
-                # Other sections use "•" bullets, so only add newlines before bullets
-                if h2_header == "Suggested Reading":
-                    answer_text = soup.get_text(separator="\n", strip=True)
-                else:
-                    # Get text without automatic separators
-                    answer_text = soup.get_text(separator="", strip=True)
-                    # Add newline before each bullet point (except at the start)
-                    answer_text = answer_text.replace("•", "\n•").lstrip("\n")
+                # Clean HTML to keep only formatting tags (bold, italic, links, etc.)
+                # This preserves visual formatting while removing structural bloat
+                answer_text = _clean_html_keep_formatting(combined_html)
 
                 # Create the card
                 card = {
