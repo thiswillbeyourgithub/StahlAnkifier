@@ -325,11 +325,13 @@ def parse_pdf(pdf_path: str) -> None:
     ]
     logger.info(f"Found {len(table_of_contents)} TOC entries")
 
-    # Extract HTML content from each page using get_textpage().extractHTML()
-    # This preserves more structural information than plain text extraction
+    # Extract HTML content and images from each page
+    # HTML uses get_textpage().extractHTML() to preserve formatting and structure
+    # Images are rendered as PNG using get_pixmap() for visual reference in Anki cards
     # Store as dict with page number as key for easy access
-    logger.info(f"Extracting HTML content from {len(doc)} pages...")
+    logger.info(f"Extracting HTML content and images from {len(doc)} pages...")
     page_contents = {}
+    page_images: Dict[int, bytes] = {}
     for page_num in tqdm(range(len(doc)), desc="Extracting pages"):
         page = doc[page_num]
         # Extract HTML from page - this preserves formatting and structure
@@ -338,6 +340,12 @@ def parse_pdf(pdf_path: str) -> None:
         # Parse HTML with BeautifulSoup for easier manipulation
         soup = BeautifulSoup(html_content, "html.parser")
         page_contents[page_num + 1] = soup  # Use 1-based indexing for readability
+
+        # Render page as PNG image for visual reference
+        # DPI=150 balances quality and file size (typical range is 150-300)
+        pix = page.get_pixmap(dpi=150)
+        img_bytes = pix.tobytes("png")
+        page_images[page_num + 1] = img_bytes  # Store as bytes for flexibility
 
     # Store all extracted data for inspection
     pdf_data = {
@@ -387,6 +395,33 @@ def parse_pdf(pdf_path: str) -> None:
                 drug_page[last_segment] = pages_content
 
     logger.info(f"Found {len(drug_page)} drugs to process")
+
+    # Build drug_images dict mapping drug names to their page images
+    # This allows including source pages as images in Anki cards for visual reference
+    logger.info("Collecting page images for each drug...")
+    drug_images: Dict[str, List[bytes]] = {}
+    for idx, item in enumerate(table_of_contents):
+        title_text = item["title"]
+        segments = title_text.split("_")
+        if segments:
+            last_segment = segments[-1]
+            if last_segment and last_segment.isupper():
+                # Get page range for this drug
+                start_page = item["page"]
+                if idx + 1 < len(table_of_contents):
+                    end_page = table_of_contents[idx + 1]["page"] - 1
+                else:
+                    end_page = pdf_data["total_pages"]
+
+                # Collect images for all pages in this drug's range
+                images_for_drug = []
+                for page_num in range(start_page, end_page + 1):
+                    if page_num in page_images:
+                        images_for_drug.append(page_images[page_num])
+
+                drug_images[last_segment] = images_for_drug
+
+    logger.info(f"Collected images for {len(drug_images)} drugs")
 
     # Parse each drug's pages into hierarchical structure
     # The structure is: drug_name -> H1 header -> H2 header -> HTML content list
@@ -490,9 +525,11 @@ def parse_pdf(pdf_path: str) -> None:
     # - title: PDF title
     # - table_of_contents: List of TOC entries with level, title, and page
     # - page_contents: Dict of page numbers -> BeautifulSoup objects with HTML content
+    # - page_images: Dict of page numbers -> PNG image bytes
     # - pdf_data: Complete dict with all extracted information
     # - metadata: Full PDF metadata dict
     # - drug_page: Dict mapping drug names (uppercase) to list of BeautifulSoup page contents
+    # - drug_images: Dict mapping drug names to list of PNG image bytes (one per page)
     # - drug_content: Dict mapping drug names to hierarchical content structure (H1 -> H2 -> HTML)
     # - cards: List of dicts ready to be converted to Anki cards
     # - r: Function to display random cards (call r() or r(k=10))
