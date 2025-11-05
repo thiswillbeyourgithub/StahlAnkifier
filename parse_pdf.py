@@ -394,7 +394,7 @@ def parse_pdf(pdf_path: str) -> None:
 
                 # Use BeautifulSoup to convert HTML to human-readable text
                 soup = BeautifulSoup(combined_html, "html.parser")
-                
+
                 # Special handling for different section types
                 # "Suggested Reading" sections don't use bullet points, so keep newlines
                 # Other sections use "•" bullets, so only add newlines before bullets
