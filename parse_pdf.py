@@ -620,7 +620,7 @@ def parse_pdf(pdf_path: str, cloze: bool = False) -> None:
                         <div style="font-size: 14px;">{{cloze:Text}}</div>
                         <hr>
                         <div style="margin-top: 15px;">
-                            <details>
+                            <details open>
                                 <summary style="cursor: pointer; color: #666;">Source Pages</summary>
                                 <div style="margin-top: 10px;">{{Source}}</div>
                             </details>
@@ -676,7 +676,7 @@ def parse_pdf(pdf_path: str, cloze: bool = False) -> None:
                         <div style="margin-top: 15px;">{{Answer}}</div>
                         <hr>
                         <div style="margin-top: 15px;">
-                            <details>
+                            <details open>
                                 <summary style="cursor: pointer; color: #666;">Source Pages</summary>
                                 <div style="margin-top: 10px;">{{PageImages}}</div>
                             </details>
