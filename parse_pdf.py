@@ -395,6 +395,22 @@ def parse_pdf(pdf_path: str) -> None:
 
     logger.info(f"Created {len(cards)} Anki cards")
 
+    # Check for cards with empty answer fields
+    logger.info("Checking for cards with empty answers...")
+    empty_answer_indices = []
+    for idx, card in enumerate(cards):
+        if not card["Answer"] or not card["Answer"].strip():
+            empty_answer_indices.append(idx)
+            logger.warning(
+                f"Card {idx} has empty answer: "
+                f"Drug={card['Drug']}, Section={card['Section']}, Question={card['Question']}"
+            )
+    
+    if empty_answer_indices:
+        logger.warning(f"Found {len(empty_answer_indices)} cards with empty answers: {empty_answer_indices}")
+    else:
+        logger.info("All cards have non-empty answers")
+
     # Enter debugger to allow investigation of extracted data
     # Variables available for inspection:
     # - title: PDF title
