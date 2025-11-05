@@ -99,7 +99,7 @@ def _merge_empty_consecutive(d: dict, is_empty: callable) -> dict:
     # This handles cases like multi-line headers split into 3+ parts
     changed = True
     result = d.copy()
-    
+
     while changed:
         changed = False
         new_result = {}
@@ -120,7 +120,7 @@ def _merge_empty_consecutive(d: dict, is_empty: callable) -> dict:
             else:
                 new_result[key] = value
                 i += 1
-        
+
         result = new_result
 
     return result
