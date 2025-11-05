@@ -405,9 +405,11 @@ def parse_pdf(pdf_path: str) -> None:
                 f"Card {idx} has empty answer: "
                 f"Drug={card['Drug']}, Section={card['Section']}, Question={card['Question']}"
             )
-    
+
     if empty_answer_indices:
-        logger.warning(f"Found {len(empty_answer_indices)} cards with empty answers: {empty_answer_indices}")
+        logger.warning(
+            f"Found {len(empty_answer_indices)} cards with empty answers: {empty_answer_indices}"
+        )
     else:
         logger.info("All cards have non-empty answers")
 
