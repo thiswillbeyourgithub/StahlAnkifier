@@ -355,7 +355,7 @@ def parse_drug_pages(
     return drug_dict
 
 
-def parse_pdf(pdf_path: str) -> None:
+def parse_pdf(pdf_path: str, cloze: bool = False) -> None:
     """
     Parse a PDF file and extract metadata, table of contents, and content.
 
@@ -363,6 +363,11 @@ def parse_pdf(pdf_path: str) -> None:
     ----------
     pdf_path : str
         Path to the PDF file to parse.
+    cloze : bool, optional
+        If True, create cloze deletion cards instead of basic Q&A cards.
+        Cloze cards have the drug/section/question in the body with the answer
+        wrapped in {{c1::}}, and source images in a separate field.
+        Default is False (basic Q&A cards).
 
     Notes
     -----
@@ -592,56 +597,109 @@ def parse_pdf(pdf_path: str) -> None:
 
     # Create genanki model (card template)
     # This defines the structure and layout of the cards
+    # Two model types: basic Q&A or cloze deletion
     logger.info("Creating Anki deck with genanki...")
-    anki_model = genanki.Model(
-        model_id=1607392319,  # Random unique ID for this model
-        name="Stahl Drug Card",
-        fields=[
-            {"name": "Drug"},
-            {"name": "Section"},
-            {"name": "Question"},
-            {"name": "Answer"},
-            {"name": "Tags"},
-            {"name": "PageImages"},
-        ],
-        templates=[
-            {
-                "name": "Card 1",
-                "qfmt": """
-                    <div style="font-size: 20px; margin-bottom: 10px;"><b>{{Drug}}</b></div>
-                    <div style="font-size: 16px; color: #666; margin-bottom: 15px;">{{Section}}</div>
-                    <div style="font-size: 18px;">{{Question}}</div>
-                """,
-                "afmt": """
-                    {{FrontSide}}
-                    <hr id="answer">
-                    <div style="margin-top: 15px;">{{Answer}}</div>
-                    <hr>
-                    <div style="margin-top: 15px;">
-                        <details>
-                            <summary style="cursor: pointer; color: #666;">Source Pages</summary>
-                            <div style="margin-top: 10px;">{{PageImages}}</div>
-                        </details>
-                    </div>
-                """,
-            },
-        ],
-        css="""
-            .card {
-                font-family: arial;
-                font-size: 14px;
-                text-align: left;
-                color: black;
-                background-color: white;
-            }
-            img {
-                max-width: 100%;
-                height: auto;
-                margin: 10px 0;
-                border: 1px solid #ccc;
-            }
-        """,
-    )
+    
+    if cloze:
+        # Cloze model: body contains drug/section/question + {{c1::answer}}, source contains images
+        anki_model = genanki.Model(
+            model_id=1607392320,  # Different ID for cloze model
+            name="Stahl Drug Cloze",
+            fields=[
+                {"name": "Text"},
+                {"name": "Source"},
+                {"name": "Tags"},
+            ],
+            templates=[
+                {
+                    "name": "Cloze",
+                    "qfmt": """
+                        <div style="font-size: 14px;">{{cloze:Text}}</div>
+                    """,
+                    "afmt": """
+                        <div style="font-size: 14px;">{{cloze:Text}}</div>
+                        <hr>
+                        <div style="margin-top: 15px;">
+                            <details>
+                                <summary style="cursor: pointer; color: #666;">Source Pages</summary>
+                                <div style="margin-top: 10px;">{{Source}}</div>
+                            </details>
+                        </div>
+                    """,
+                },
+            ],
+            css="""
+                .card {
+                    font-family: arial;
+                    font-size: 14px;
+                    text-align: left;
+                    color: black;
+                    background-color: white;
+                }
+                img {
+                    max-width: 100%;
+                    height: auto;
+                    margin: 10px 0;
+                    border: 1px solid #ccc;
+                }
+                .cloze {
+                    font-weight: bold;
+                    color: blue;
+                }
+            """,
+            model_type=genanki.Model.CLOZE,
+        )
+    else:
+        # Basic Q&A model: separate fields for drug, section, question, answer
+        anki_model = genanki.Model(
+            model_id=1607392319,  # Random unique ID for this model
+            name="Stahl Drug Card",
+            fields=[
+                {"name": "Drug"},
+                {"name": "Section"},
+                {"name": "Question"},
+                {"name": "Answer"},
+                {"name": "Tags"},
+                {"name": "PageImages"},
+            ],
+            templates=[
+                {
+                    "name": "Card 1",
+                    "qfmt": """
+                        <div style="font-size: 20px; margin-bottom: 10px;"><b>{{Drug}}</b></div>
+                        <div style="font-size: 16px; color: #666; margin-bottom: 15px;">{{Section}}</div>
+                        <div style="font-size: 18px;">{{Question}}</div>
+                    """,
+                    "afmt": """
+                        {{FrontSide}}
+                        <hr id="answer">
+                        <div style="margin-top: 15px;">{{Answer}}</div>
+                        <hr>
+                        <div style="margin-top: 15px;">
+                            <details>
+                                <summary style="cursor: pointer; color: #666;">Source Pages</summary>
+                                <div style="margin-top: 10px;">{{PageImages}}</div>
+                            </details>
+                        </div>
+                    """,
+                },
+            ],
+            css="""
+                .card {
+                    font-family: arial;
+                    font-size: 14px;
+                    text-align: left;
+                    color: black;
+                    background-color: white;
+                }
+                img {
+                    max-width: 100%;
+                    height: auto;
+                    margin: 10px 0;
+                    border: 1px solid #ccc;
+                }
+            """,
+        )
 
     # Create deck and add notes
     anki_deck = genanki.Deck(
@@ -651,18 +709,39 @@ def parse_pdf(pdf_path: str) -> None:
 
     logger.info("Adding notes to deck...")
     for card in tqdm(cards, desc="Adding notes"):
-        note = genanki.Note(
-            model=anki_model,
-            fields=[
-                card["Drug"],
-                card["Section"],
-                card["Question"],
-                card["Answer"],
-                ", ".join(card["Tags"]),
-                card["PageImages"],
-            ],
-            tags=card["Tags"],
-        )
+        if cloze:
+            # For cloze cards: body contains drug/section/question + {{c1::answer}}
+            # Format: Drug name in bold, section, question, then cloze-wrapped answer
+            text_content = (
+                f"<div style='font-size: 20px; margin-bottom: 10px;'><b>{card['Drug']}</b></div>"
+                f"<div style='font-size: 16px; color: #666; margin-bottom: 10px;'>{card['Section']}</div>"
+                f"<div style='font-size: 18px; margin-bottom: 15px;'>{card['Question']}</div>"
+                f"<div style='margin-top: 15px;'>{{{{c1::{card['Answer']}}}}}</div>"
+            )
+            
+            note = genanki.Note(
+                model=anki_model,
+                fields=[
+                    text_content,
+                    card["PageImages"],
+                    ", ".join(card["Tags"]),
+                ],
+                tags=card["Tags"],
+            )
+        else:
+            # Basic Q&A cards: separate fields
+            note = genanki.Note(
+                model=anki_model,
+                fields=[
+                    card["Drug"],
+                    card["Section"],
+                    card["Question"],
+                    card["Answer"],
+                    ", ".join(card["Tags"]),
+                    card["PageImages"],
+                ],
+                tags=card["Tags"],
+            )
         anki_deck.add_note(note)
 
     # Create package with media files and write to disk
