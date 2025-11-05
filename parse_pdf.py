@@ -582,7 +582,7 @@ def parse_pdf(pdf_path: str) -> None:
                     "Question": question,
                     "Answer": answer_text,
                     "Tags": [
-                        f"Stahl::{drug_name.replace(' ', '_')}::{h1_header.replace(' ', '_')}"
+                        f"Stahl::{drug_name.lower().replace(' ', '_')}::{h1_header.lower().replace(' ', '_')}"
                     ],
                     "PageImages": page_images_html,
                 }
