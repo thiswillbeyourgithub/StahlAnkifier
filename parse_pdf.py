@@ -734,7 +734,7 @@ def parse_pdf(pdf_path: str) -> None:
     # - drug_content: Dict mapping drug names to hierarchical content structure (H1 -> H2 -> HTML)
     # - cards: List of dicts ready to be converted to Anki cards
     # - r: Function to display random cards (call r() or r(k=10))
-    breakpoint()
+    # breakpoint()
 
 
 def main() -> None:
