@@ -174,6 +174,8 @@ def _clean_html_keep_formatting(html_content: str) -> str:
 
     This removes structural tags like <div>, <span>, etc. but keeps
     formatting tags like <b>, <i>, <a> that are useful in Anki cards.
+    Also removes all style attributes to eliminate positioning/layout styles
+    while preserving semantic formatting from tags.
 
     Parameters
     ----------
@@ -183,7 +185,7 @@ def _clean_html_keep_formatting(html_content: str) -> str:
     Returns
     -------
     str
-        Cleaned HTML with only formatting tags preserved
+        Cleaned HTML with only formatting tags preserved and no style attributes
     """
     soup = BeautifulSoup(html_content, "html.parser")
 
@@ -196,6 +198,13 @@ def _clean_html_keep_formatting(html_content: str) -> str:
     for tag in soup.find_all():
         if tag.name not in allowed_tags:
             tag.unwrap()
+
+    # Remove all style attributes from remaining tags
+    # This eliminates positioning (top, left) and layout (line-height) styles
+    # while preserving semantic formatting from tag types (<b>, <i>, etc.)
+    for tag in soup.find_all():
+        if tag.has_attr("style"):
+            del tag["style"]
 
     return str(soup)
 
