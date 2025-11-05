@@ -464,10 +464,14 @@ def parse_pdf(pdf_path: str) -> None:
                 answer_text = _clean_html_keep_formatting(combined_html)
 
                 # Create the card
+                # Format drug name and section with title case for readability
+                # Add question mark to question if not present
+                question = h2_header if h2_header.endswith("?") else f"{h2_header}?"
+                
                 card = {
-                    "Drug": drug_name,
-                    "Section": h1_header,
-                    "Question": h2_header,
+                    "Drug": drug_name.title(),
+                    "Section": h1_header.title(),
+                    "Question": question,
                     "Answer": answer_text,
                     "Tags": [
                         f"Stahl::{drug_name.replace(' ', '_')}::{h1_header.replace(' ', '_')}"
