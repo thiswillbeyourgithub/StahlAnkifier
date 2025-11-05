@@ -5,6 +5,8 @@
 #   "beautifulsoup4",
 #   "loguru",
 #   "tqdm",
+#   "genanki",
+#   "Pillow",
 # ]
 # ///
 
@@ -17,14 +19,19 @@ Uses PyMuPDF (fitz) for PDF parsing and Fire for CLI argument handling.
 Created with assistance from aider.chat (https://github.com/Aider-AI/aider/)
 """
 
+import io
 import random
+import shutil
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, List
 
 import fire
 import fitz  # PyMuPDF
+import genanki
 from bs4 import BeautifulSoup, Tag
 from loguru import logger
+from PIL import Image
 from tqdm import tqdm
 
 
@@ -341,10 +348,16 @@ def parse_pdf(pdf_path: str) -> None:
         soup = BeautifulSoup(html_content, "html.parser")
         page_contents[page_num + 1] = soup  # Use 1-based indexing for readability
 
-        # Render page as PNG image for visual reference
-        # DPI=150 balances quality and file size (typical range is 150-300)
-        pix = page.get_pixmap(dpi=150)
-        img_bytes = pix.tobytes("png")
+        # Render page as JPEG image for visual reference
+        # DPI=75 for compact file size, grayscale to reduce size further
+        # JPEG with quality=75 provides good compression while maintaining readability
+        pix = page.get_pixmap(colorspace=fitz.csGRAY, dpi=75)
+        
+        # Convert to JPEG using PIL for better compression
+        img = Image.frombytes("L", [pix.width, pix.height], pix.samples)
+        img_bytes_io = io.BytesIO()
+        img.save(img_bytes_io, format='JPEG', quality=75, optimize=True)
+        img_bytes = img_bytes_io.getvalue()
         page_images[page_num + 1] = img_bytes  # Store as bytes for flexibility
 
     # Store all extracted data for inspection
@@ -442,11 +455,31 @@ def parse_pdf(pdf_path: str) -> None:
         # Parse the combined content
         drug_content[drug_name] = parse_drug_pages(combined_soup)
 
+    # Create temporary directory for image files
+    # Images are written to disk so genanki can include them in the apkg package
+    logger.info("Creating temporary directory for image files...")
+    temp_dir = tempfile.mkdtemp()
+    media_files = []  # Track all media file paths for genanki
+
     # Create Anki cards from the parsed drug content
-    # Each card has: Drug, Section (H1), Question (H2), Answer (concatenated H2 content), Tags
+    # Each card has: Drug, Section (H1), Question (H2), Answer (concatenated H2 content), Tags, PageImages
     logger.info("Creating Anki cards from parsed content...")
     cards: List[Dict[str, Any]] = []
     for drug_name, h1_dict in tqdm(drug_content.items(), desc="Creating cards"):
+        # Write images for this drug to temp directory and create img tags
+        # All cards for a drug will reference the same set of page images
+        drug_name_for_file = drug_name.lower().replace(' ', '_')
+        img_tags = []
+        for page_idx, img_bytes in enumerate(drug_images.get(drug_name, [])):
+            filename = f"{drug_name_for_file}_page_{page_idx}.jpg"
+            filepath = Path(temp_dir) / filename
+            filepath.write_bytes(img_bytes)
+            media_files.append(str(filepath))
+            img_tags.append(f'<img src="{filename}">')
+        
+        # Combine all img tags with line breaks for readability
+        page_images_html = "<br>".join(img_tags)
+        
         for h1_header, h2_dict in h1_dict.items():
             for h2_header, content_list in h2_dict.items():
                 # Verify content_list is a list, not a dict (would mean we missed a level)
@@ -476,10 +509,99 @@ def parse_pdf(pdf_path: str) -> None:
                     "Tags": [
                         f"Stahl::{drug_name.replace(' ', '_')}::{h1_header.replace(' ', '_')}"
                     ],
+                    "PageImages": page_images_html,
                 }
                 cards.append(card)
 
-    logger.info(f"Created {len(cards)} Anki cards")
+    logger.info(f"Created {len(cards)} Anki cards with {len(media_files)} media files")
+
+    # Create genanki model (card template)
+    # This defines the structure and layout of the cards
+    logger.info("Creating Anki deck with genanki...")
+    anki_model = genanki.Model(
+        model_id=1607392319,  # Random unique ID for this model
+        name='Stahl Drug Card',
+        fields=[
+            {'name': 'Drug'},
+            {'name': 'Section'},
+            {'name': 'Question'},
+            {'name': 'Answer'},
+            {'name': 'Tags'},
+            {'name': 'PageImages'},
+        ],
+        templates=[
+            {
+                'name': 'Card 1',
+                'qfmt': '''
+                    <div style="font-size: 20px; margin-bottom: 10px;"><b>{{Drug}}</b></div>
+                    <div style="font-size: 16px; color: #666; margin-bottom: 15px;">{{Section}}</div>
+                    <div style="font-size: 18px;">{{Question}}</div>
+                ''',
+                'afmt': '''
+                    {{FrontSide}}
+                    <hr id="answer">
+                    <div style="margin-top: 15px;">{{Answer}}</div>
+                    <hr>
+                    <div style="margin-top: 15px;">
+                        <details>
+                            <summary style="cursor: pointer; color: #666;">Source Pages</summary>
+                            <div style="margin-top: 10px;">{{PageImages}}</div>
+                        </details>
+                    </div>
+                ''',
+            },
+        ],
+        css='''
+            .card {
+                font-family: arial;
+                font-size: 14px;
+                text-align: left;
+                color: black;
+                background-color: white;
+            }
+            img {
+                max-width: 100%;
+                height: auto;
+                margin: 10px 0;
+                border: 1px solid #ccc;
+            }
+        '''
+    )
+
+    # Create deck and add notes
+    anki_deck = genanki.Deck(
+        deck_id=2059400110,  # Random unique ID for this deck
+        name='Stahl Essential Psychopharmacology'
+    )
+
+    logger.info("Adding notes to deck...")
+    for card in tqdm(cards, desc="Adding notes"):
+        note = genanki.Note(
+            model=anki_model,
+            fields=[
+                card['Drug'],
+                card['Section'],
+                card['Question'],
+                card['Answer'],
+                ', '.join(card['Tags']),
+                card['PageImages'],
+            ],
+            tags=card['Tags']
+        )
+        anki_deck.add_note(note)
+
+    # Create package with media files and write to disk
+    logger.info("Writing Anki package to file...")
+    anki_package = genanki.Package(anki_deck)
+    anki_package.media_files = media_files
+    output_file = 'stahl_drugs.apkg'
+    anki_package.write_to_file(output_file)
+    logger.info(f"Anki deck written to {output_file}")
+
+    # Clean up temporary directory
+    logger.info("Cleaning up temporary files...")
+    shutil.rmtree(temp_dir)
+    logger.info("Temporary files cleaned up")
 
     # Check for cards with empty answer fields
     logger.info("Checking for cards with empty answers...")
