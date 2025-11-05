@@ -352,11 +352,11 @@ def parse_pdf(pdf_path: str) -> None:
         # DPI=75 for compact file size, grayscale to reduce size further
         # JPEG with quality=75 provides good compression while maintaining readability
         pix = page.get_pixmap(colorspace=fitz.csGRAY, dpi=75)
-        
+
         # Convert to JPEG using PIL for better compression
         img = Image.frombytes("L", [pix.width, pix.height], pix.samples)
         img_bytes_io = io.BytesIO()
-        img.save(img_bytes_io, format='JPEG', quality=75, optimize=True)
+        img.save(img_bytes_io, format="JPEG", quality=75, optimize=True)
         img_bytes = img_bytes_io.getvalue()
         page_images[page_num + 1] = img_bytes  # Store as bytes for flexibility
 
@@ -468,7 +468,7 @@ def parse_pdf(pdf_path: str) -> None:
     for drug_name, h1_dict in tqdm(drug_content.items(), desc="Creating cards"):
         # Write images for this drug to temp directory and create img tags
         # All cards for a drug will reference the same set of page images
-        drug_name_for_file = drug_name.lower().replace(' ', '_')
+        drug_name_for_file = drug_name.lower().replace(" ", "_")
         img_tags = []
         for page_idx, img_bytes in enumerate(drug_images.get(drug_name, [])):
             filename = f"{drug_name_for_file}_page_{page_idx}.jpg"
@@ -476,10 +476,10 @@ def parse_pdf(pdf_path: str) -> None:
             filepath.write_bytes(img_bytes)
             media_files.append(str(filepath))
             img_tags.append(f'<img src="{filename}">')
-        
+
         # Combine all img tags with line breaks for readability
         page_images_html = "<br>".join(img_tags)
-        
+
         for h1_header, h2_dict in h1_dict.items():
             for h2_header, content_list in h2_dict.items():
                 # Verify content_list is a list, not a dict (would mean we missed a level)
@@ -520,24 +520,24 @@ def parse_pdf(pdf_path: str) -> None:
     logger.info("Creating Anki deck with genanki...")
     anki_model = genanki.Model(
         model_id=1607392319,  # Random unique ID for this model
-        name='Stahl Drug Card',
+        name="Stahl Drug Card",
         fields=[
-            {'name': 'Drug'},
-            {'name': 'Section'},
-            {'name': 'Question'},
-            {'name': 'Answer'},
-            {'name': 'Tags'},
-            {'name': 'PageImages'},
+            {"name": "Drug"},
+            {"name": "Section"},
+            {"name": "Question"},
+            {"name": "Answer"},
+            {"name": "Tags"},
+            {"name": "PageImages"},
         ],
         templates=[
             {
-                'name': 'Card 1',
-                'qfmt': '''
+                "name": "Card 1",
+                "qfmt": """
                     <div style="font-size: 20px; margin-bottom: 10px;"><b>{{Drug}}</b></div>
                     <div style="font-size: 16px; color: #666; margin-bottom: 15px;">{{Section}}</div>
                     <div style="font-size: 18px;">{{Question}}</div>
-                ''',
-                'afmt': '''
+                """,
+                "afmt": """
                     {{FrontSide}}
                     <hr id="answer">
                     <div style="margin-top: 15px;">{{Answer}}</div>
@@ -548,10 +548,10 @@ def parse_pdf(pdf_path: str) -> None:
                             <div style="margin-top: 10px;">{{PageImages}}</div>
                         </details>
                     </div>
-                ''',
+                """,
             },
         ],
-        css='''
+        css="""
             .card {
                 font-family: arial;
                 font-size: 14px;
@@ -565,13 +565,13 @@ def parse_pdf(pdf_path: str) -> None:
                 margin: 10px 0;
                 border: 1px solid #ccc;
             }
-        '''
+        """,
     )
 
     # Create deck and add notes
     anki_deck = genanki.Deck(
         deck_id=2059400110,  # Random unique ID for this deck
-        name='Stahl Essential Psychopharmacology'
+        name="Stahl Essential Psychopharmacology",
     )
 
     logger.info("Adding notes to deck...")
@@ -579,14 +579,14 @@ def parse_pdf(pdf_path: str) -> None:
         note = genanki.Note(
             model=anki_model,
             fields=[
-                card['Drug'],
-                card['Section'],
-                card['Question'],
-                card['Answer'],
-                ', '.join(card['Tags']),
-                card['PageImages'],
+                card["Drug"],
+                card["Section"],
+                card["Question"],
+                card["Answer"],
+                ", ".join(card["Tags"]),
+                card["PageImages"],
             ],
-            tags=card['Tags']
+            tags=card["Tags"],
         )
         anki_deck.add_note(note)
 
@@ -594,7 +594,7 @@ def parse_pdf(pdf_path: str) -> None:
     logger.info("Writing Anki package to file...")
     anki_package = genanki.Package(anki_deck)
     anki_package.media_files = media_files
-    output_file = 'stahl_drugs.apkg'
+    output_file = "stahl_drugs.apkg"
     anki_package.write_to_file(output_file)
     logger.info(f"Anki deck written to {output_file}")
 
