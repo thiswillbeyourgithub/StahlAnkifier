@@ -467,7 +467,7 @@ def parse_pdf(pdf_path: str) -> None:
                 # Format drug name and section with title case for readability
                 # Add question mark to question if not present
                 question = h2_header if h2_header.endswith("?") else f"{h2_header}?"
-                
+
                 card = {
                     "Drug": drug_name.title(),
                     "Section": h1_header.title(),
