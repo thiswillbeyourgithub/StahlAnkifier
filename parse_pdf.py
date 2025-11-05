@@ -599,7 +599,7 @@ def parse_pdf(pdf_path: str, cloze: bool = False) -> None:
     # This defines the structure and layout of the cards
     # Two model types: basic Q&A or cloze deletion
     logger.info("Creating Anki deck with genanki...")
-    
+
     if cloze:
         # Cloze model: body contains drug/section/question + {{c1::answer}}, source contains images
         anki_model = genanki.Model(
@@ -718,7 +718,7 @@ def parse_pdf(pdf_path: str, cloze: bool = False) -> None:
                 f"<div style='font-size: 18px; margin-bottom: 15px;'>{card['Question']}</div>"
                 f"<div style='margin-top: 15px;'>{{{{c1::{card['Answer']}}}}}</div>"
             )
-            
+
             note = genanki.Note(
                 model=anki_model,
                 fields=[
