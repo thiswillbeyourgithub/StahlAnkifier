@@ -17,6 +17,7 @@ Uses PyMuPDF (fitz) for PDF parsing and Fire for CLI argument handling.
 Created with assistance from aider.chat (https://github.com/Aider-AI/aider/)
 """
 
+import random
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -425,6 +426,31 @@ def parse_pdf(pdf_path: str) -> None:
     else:
         logger.info("All cards have non-empty answers")
 
+    # Local function to display random cards in Anki-like layout
+    def r(k: int = 5) -> None:
+        """
+        Print k random cards in Anki-like layout.
+
+        Parameters
+        ----------
+        k : int, optional
+            Number of random cards to display, by default 5
+        """
+        sample_size = min(k, len(cards))
+        sample_cards = random.sample(cards, sample_size)
+
+        for idx, card in enumerate(sample_cards, 1):
+            print(f"\n{'=' * 80}")
+            print(f"Card {idx}/{sample_size}")
+            print(f"{'=' * 80}")
+            print(f"Drug: {card['Drug']}")
+            print(f"Section: {card['Section']}")
+            print(f"\nQuestion: {card['Question']}")
+            print(f"\n{'-' * 80}")
+            print(f"Answer:\n{card['Answer']}")
+            print(f"\nTags: {', '.join(card['Tags'])}")
+            print(f"{'=' * 80}")
+
     # Enter debugger to allow investigation of extracted data
     # Variables available for inspection:
     # - title: PDF title
@@ -435,6 +461,7 @@ def parse_pdf(pdf_path: str) -> None:
     # - drug_page: Dict mapping drug names (uppercase) to list of BeautifulSoup page contents
     # - drug_content: Dict mapping drug names to hierarchical content structure (H1 -> H2 -> HTML)
     # - cards: List of dicts ready to be converted to Anki cards
+    # - r: Function to display random cards (call r() or r(k=10))
     breakpoint()
 
 
