@@ -168,6 +168,67 @@ def _merge_empty_headers(
     return result
 
 
+def _merge_bullet_paragraphs(html_content: str) -> str:
+    """
+    Merge consecutive <p> tags that don't start with a bullet point (•).
+
+    Paragraphs starting with • are kept separate as they mark the beginning
+    of new bullet points. Paragraphs without • are merged with the previous
+    paragraph to fix line wrapping issues in the PDF extraction.
+
+    Parameters
+    ----------
+    html_content : str
+        HTML content to process
+
+    Returns
+    -------
+    str
+        HTML with merged paragraphs
+    """
+    soup = BeautifulSoup(html_content, "html.parser")
+    paragraphs = soup.find_all("p")
+
+    if not paragraphs:
+        return html_content
+
+    # Group paragraphs - each group starts with a bullet point or is the first paragraph
+    groups = []
+    current_group = []
+
+    for p in paragraphs:
+        text = p.get_text(strip=True)
+
+        # Check if this paragraph starts a new bullet point
+        if text.startswith("•"):
+            # Save the current group if it exists
+            if current_group:
+                groups.append(current_group)
+            # Start a new group with this paragraph
+            current_group = [p]
+        else:
+            # Add to current group (merge with previous)
+            current_group.append(p)
+
+    # Don't forget the last group
+    if current_group:
+        groups.append(current_group)
+
+    # Merge each group into a single paragraph
+    merged_paragraphs = []
+    for group in groups:
+        if len(group) == 1:
+            # Single paragraph, keep as is
+            merged_paragraphs.append(str(group[0]))
+        else:
+            # Multiple paragraphs, merge their content
+            # Extract text from each paragraph and join with a space
+            merged_text = " ".join(p.get_text(strip=True) for p in group)
+            merged_paragraphs.append(f"<p>{merged_text}</p>")
+
+    return "".join(merged_paragraphs)
+
+
 def _clean_html_keep_formatting(html_content: str) -> str:
     """
     Clean HTML by removing most tags while preserving formatting tags.
@@ -500,6 +561,11 @@ def parse_pdf(pdf_path: str) -> None:
 
                 # Concatenate all HTML content into a single string
                 combined_html = "".join(content_list)
+
+                # Merge consecutive paragraphs that don't start with bullet points
+                # Skip this for "Suggested Reading" sections which don't use bullets
+                if h2_header.lower() != "suggested reading":
+                    combined_html = _merge_bullet_paragraphs(combined_html)
 
                 # Clean HTML to keep only formatting tags (bold, italic, links, etc.)
                 # This preserves visual formatting while removing structural bloat
