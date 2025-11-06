@@ -114,6 +114,20 @@ The script generates an `.apkg` file (e.g., `stahl_drugs_v1.0.0.apkg`) that can 
 
 The resulting deck contains approximately **787 cards** and is about **57 MB** in size (including source page images).
 
+<details>
+<summary>Click for images</summary>
+
+- Original page:
+![](./images/page.png)
+
+- Card content (as of version `2.1.3`)
+![](./images/anki.png)
+
+- Card appearance (as of version `2.1.3`)
+![](./images/card.png)
+
+</details>
+
 ## Legal Notice
 
 **This tool is completely legal for at least the following reasons:**
