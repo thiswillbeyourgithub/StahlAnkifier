@@ -705,7 +705,7 @@ def parse_pdf(
                         <hr>
                         <div style="margin-top: 15px;">
                             <details open>
-                                <summary style="cursor: pointer; color: #666;">Source Pages</summary>
+                                <summary style="cursor: pointer; ">Source Pages</summary>
                                 <div style="margin-top: 10px;">{{Source}}</div>
                             </details>
                         </div>
@@ -751,7 +751,7 @@ def parse_pdf(
                     "name": "Card 1",
                     "qfmt": """
                         <div style="font-size: 20px; margin-bottom: 10px;"><b>{{Drug}}</b></div>
-                        <div style="font-size: 16px; color: #666; margin-bottom: 15px;">{{Section}}</div>
+                        <div style="font-size: 16px; margin-bottom: 15px;">{{Section}}</div>
                         <div style="font-size: 18px;">{{Question}}</div>
                     """,
                     "afmt": """
@@ -761,7 +761,7 @@ def parse_pdf(
                         <hr>
                         <div style="margin-top: 15px;">
                             <details open>
-                                <summary style="cursor: pointer; color: #666;">Source Pages</summary>
+                                <summary style="cursor: pointer; ">Source Pages</summary>
                                 <div style="margin-top: 10px;">{{PageImages}}</div>
                             </details>
                         </div>
@@ -875,7 +875,7 @@ def parse_pdf(
             # Format: Drug name in bold, section, question, then cloze-wrapped answer
             text_content = (
                 f"<div style='font-size: 20px; margin-bottom: 10px;'><b>{card['Drug']}</b></div>"
-                f"<div style='font-size: 16px; color: #666; margin-bottom: 10px;'>{card['Section']}</div>"
+                f"<div style='font-size: 16px; margin-bottom: 10px;'>{card['Section']}</div>"
                 f"<div style='font-size: 18px; margin-bottom: 15px;'>{card['Question']}</div>"
                 f"<div style='margin-top: 15px;'>{cloze_answer}</div>"
             )
