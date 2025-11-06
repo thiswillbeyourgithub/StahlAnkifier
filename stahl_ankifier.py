@@ -824,7 +824,8 @@ def parse_pdf(
     )
 
     logger.info("Adding notes to deck...")
-    for card in tqdm(cards, desc="Adding notes"):
+    skipped_empty_cards = []
+    for card_idx, card in enumerate(tqdm(cards, desc="Adding notes")):
         if format == "basic":
             # Basic Q&A cards: separate fields
             note = genanki.Note(
@@ -856,6 +857,19 @@ def parse_pdf(
             answer_html = answer_html.replace(card["Drug"].upper(), "")
             answer_html = answer_html.replace("(continued)", "")
             answer_html = answer_html.strip()
+
+            # Check if answer is effectively empty after cleanup (only footers were present)
+            # Remove HTML tags to check if there's any actual text content
+            soup_check = BeautifulSoup(answer_html, "html.parser")
+            text_content = soup_check.get_text(strip=True)
+            if not text_content:
+                # Skip this card as it only contained footer content
+                skipped_empty_cards.append(card_idx)
+                logger.warning(
+                    f"Skipping card {card_idx} with empty answer after cleanup: "
+                    f"Drug={card['Drug']}, Section={card['Section']}, Question={card['Question']}"
+                )
+                continue
 
             if format == "singlecloze":
                 # Wrap entire answer in {{c1::}}
@@ -922,12 +936,14 @@ def parse_pdf(
             #     print(f"Original: '{original}'")
             #     breakpoint()
 
-            assert "{{c" in cloze_answer, (
-                f"Answer is missing start of cloze: {cloze_answer}\n{original}"
-            )
-            assert "}}" in cloze_answer, (
-                f"Answer is missing end of cloze: {cloze_answer}\n{original}"
-            )
+            # Verify cloze markers exist (skip if missing, shouldn't happen after empty check above)
+            if "{{c" not in cloze_answer or "}}" not in cloze_answer:
+                skipped_empty_cards.append(card_idx)
+                logger.error(
+                    f"Skipping card {card_idx} missing cloze markers: "
+                    f"Drug={card['Drug']}, Section={card['Section']}, Question={card['Question']}"
+                )
+                continue
 
             # Format: Question followed by cloze-wrapped answer
             # Drug and Section are now separate fields
@@ -948,6 +964,12 @@ def parse_pdf(
                 tags=card["Tags"],
             )
         anki_deck.add_note(note)
+
+    # Log summary of skipped cards
+    if skipped_empty_cards:
+        logger.warning(
+            f"Skipped {len(skipped_empty_cards)} cards with empty content: {skipped_empty_cards}"
+        )
 
     # Create package with media files and write to disk
     logger.info("Writing Anki package to file...")
