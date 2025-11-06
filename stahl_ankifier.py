@@ -55,6 +55,7 @@ def _clean_page_headers(soup: BeautifulSoup, drug_name: str) -> BeautifulSoup:
     - Page numbers (just a number)
     - "(continued)" text
     - The drug name in uppercase
+    - "Published online by Cambridge University Press"
 
     This prevents these elements from appearing in Anki card answers.
 
@@ -85,7 +86,13 @@ def _clean_page_headers(soup: BeautifulSoup, drug_name: str) -> BeautifulSoup:
         # 1. Just a number (page counter)
         # 2. "(continued)" indicator
         # 3. Drug name in uppercase
-        if text.isdigit() or text.lower() == "(continued)" or text == drug_name:
+        # 4. Cambridge University Press notice
+        if (
+            text.isdigit()
+            or text.lower() == "(continued)"
+            or text == drug_name
+            or text == "Published online by Cambridge University Press"
+        ):
             p.decompose()  # Remove this paragraph
         else:
             # Stop checking once we hit a non-header paragraph
