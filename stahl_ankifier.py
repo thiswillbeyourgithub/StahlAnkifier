@@ -423,13 +423,11 @@ def parse_pdf(pdf_path: str, format: str = "basic") -> None:
         raise FileNotFoundError(f"PDF file not found: {pdf_path}")
     if pdf_file.suffix.lower() != ".pdf":
         raise ValueError(f"File must be a PDF, got: {pdf_file.suffix}")
-    
+
     # Validate format parameter
     valid_formats = ["basic", "singlecloze", "onecloze", "multicloze"]
     if format not in valid_formats:
-        raise ValueError(
-            f"Invalid format: {format}. Must be one of {valid_formats}"
-        )
+        raise ValueError(f"Invalid format: {format}. Must be one of {valid_formats}")
 
     # Open the PDF document
     logger.warning("Opening PDF file")
@@ -779,7 +777,7 @@ def parse_pdf(pdf_path: str, format: str = "basic") -> None:
         else:
             # Cloze cards: format the answer based on cloze type
             answer_html = card["Answer"]
-            
+
             if format == "singlecloze":
                 # Wrap entire answer in {{c1::}}
                 cloze_answer = f"{{{{c1::{answer_html}}}}}"
@@ -798,7 +796,7 @@ def parse_pdf(pdf_path: str, format: str = "basic") -> None:
                     p_content = str(p)[3:-4]  # Remove <p> and </p>
                     p.string = f"{{{{c{idx}::{p_content}}}}}"
                 cloze_answer = str(soup)
-            
+
             # Format: Drug name in bold, section, question, then cloze-wrapped answer
             text_content = (
                 f"<div style='font-size: 20px; margin-bottom: 10px;'><b>{card['Drug']}</b></div>"
