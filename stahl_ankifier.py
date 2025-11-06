@@ -592,7 +592,7 @@ def parse_pdf(pdf_path: str, format: str = "basic", source: str = "images") -> N
         # Get page range for this drug to display at top of source field
         page_range = drug_page_ranges.get(drug_name, (0, 0))
         page_range_text = f"<div style='font-weight: bold; margin-bottom: 10px;'>Pages: {page_range[0]}-{page_range[1]}</div>"
-        
+
         # Write images for this drug to temp directory and create img tags
         # All cards for a drug will reference the same set of page images
         # Only include images if source=="images"
