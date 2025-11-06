@@ -390,7 +390,7 @@ def parse_drug_pages(
     return drug_dict
 
 
-def parse_pdf(pdf_path: str, format: str = "basic") -> None:
+def parse_pdf(pdf_path: str, format: str = "basic", source: str = "images") -> None:
     """
     Parse a PDF file and extract metadata, table of contents, and content.
 
@@ -404,6 +404,10 @@ def parse_pdf(pdf_path: str, format: str = "basic") -> None:
         - "singlecloze": Single cloze deletion wrapping the entire answer in {{c1::}}
         - "onecloze": Each paragraph in the answer becomes {{c1::paragraph}}
         - "multicloze": Each paragraph gets sequential cloze numbers {{c1::}}, {{c2::}}, etc.
+    source : str, optional
+        Whether to include page images in the source field:
+        - "images": Include page images (default)
+        - Any other value: Don't include images
 
     Notes
     -----
@@ -584,17 +588,20 @@ def parse_pdf(pdf_path: str, format: str = "basic") -> None:
     for drug_name, h1_dict in tqdm(drug_content.items(), desc="Creating cards"):
         # Write images for this drug to temp directory and create img tags
         # All cards for a drug will reference the same set of page images
-        drug_name_for_file = drug_name.lower().replace(" ", "_")
-        img_tags = []
-        for page_idx, img_bytes in enumerate(drug_images.get(drug_name, [])):
-            filename = f"{drug_name_for_file}_page_{page_idx}.jpg"
-            filepath = Path(temp_dir) / filename
-            filepath.write_bytes(img_bytes)
-            media_files.append(str(filepath))
-            img_tags.append(f'<img src="{filename}">')
+        # Only include images if source=="images"
+        page_images_html = ""
+        if source == "images":
+            drug_name_for_file = drug_name.lower().replace(" ", "_")
+            img_tags = []
+            for page_idx, img_bytes in enumerate(drug_images.get(drug_name, [])):
+                filename = f"{drug_name_for_file}_page_{page_idx}.jpg"
+                filepath = Path(temp_dir) / filename
+                filepath.write_bytes(img_bytes)
+                media_files.append(str(filepath))
+                img_tags.append(f'<img src="{filename}">')
 
-        # Combine all img tags with line breaks for readability
-        page_images_html = "<br>".join(img_tags)
+            # Combine all img tags with line breaks for readability
+            page_images_html = "<br>".join(img_tags)
 
         for h1_header, h2_dict in h1_dict.items():
             for h2_header, content_list in h2_dict.items():
