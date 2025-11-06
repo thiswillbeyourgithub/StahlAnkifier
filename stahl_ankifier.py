@@ -31,6 +31,7 @@ import io
 import re
 import random
 import shutil
+import copy
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Literal
@@ -809,6 +810,7 @@ def parse_pdf(
         else:
             # Cloze cards: format the answer based on cloze type
             answer_html = card["Answer"]
+            original = copy.deepcopy(answer_html)
 
             if format == "singlecloze":
                 # Wrap entire answer in {{c1::}}
@@ -867,8 +869,8 @@ def parse_pdf(
 
             cloze_answer = re.sub(r"{{c\d*::\s*}}", "", cloze_answer).strip()
 
-            assert "{{c" in cloze_answer, f"Answer is missing start of cloze: {cloze_answer}"
-            assert "}}" in cloze_answer, f"Answer is missing end of cloze: {cloze_answer}"
+            assert "{{c" in cloze_answer, f"Answer is missing start of cloze: {cloze_answer}\n{original}"
+            assert "}}" in cloze_answer, f"Answer is missing end of cloze: {cloze_answer}\n{original}"
 
             # Format: Drug name in bold, section, question, then cloze-wrapped answer
             text_content = (
