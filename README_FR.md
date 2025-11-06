@@ -4,6 +4,12 @@
 
 Un script Python pour convertir le PDF de **Stahl's Essential Psychopharmacology: Prescriber's Guide, 8e Édition** en cartes Anki pour une mémorisation efficace.
 
+En d'autres termes, il transforme ceci :
+![](./images/page.png)
+
+En quelque chose comme ceci :
+![](./images/card.png)
+
 **Informations sur le livre :**
 - Titre : Prescriber's Guide - Stahl's Essential Psychopharmacology, 8e Édition
 - ISBN : 9781009464772
@@ -110,9 +116,23 @@ uv run stahl_ankifier.py votre_pdf_stahl.pdf --no-include-images
 
 ### Sortie
 
-Le script génère un fichier `.apkg` (par exemple, `stahl_drugs_v1.0.0.apkg`) qui peut être importé directement dans Anki.
+Le script génère un fichier `.apkg` (par exemple, `stahl_drugs_v2.3.0.apkg`) qui peut être importé directement dans Anki.
 
 Le paquet résultant contient environ **787 cartes** et fait environ **57 Mo** (y compris les images des pages sources).
+
+<details>
+<summary>Cliquez pour voir les images</summary>
+
+- Page originale :
+![](./images/page.png)
+
+- Contenu de la carte (à partir de la version `2.1.3`)
+![](./images/anki.png)
+
+- Apparence de la carte (à partir de la version `2.1.3`)
+![](./images/card.png)
+
+</details>
 
 ## Avis juridique
 
