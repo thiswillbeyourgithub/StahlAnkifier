@@ -61,7 +61,7 @@ The script will automatically install all required dependencies on first run.
 If you prefer to install dependencies manually:
 
 ```bash
-pip install fire pymupdf beautifulsoup4 loguru tqdm genanki Pillow
+pip install fire==0.7.1 pymupdf==1.26.4 beautifulsoup4==4.14.2 loguru==0.7.3 tqdm==4.67.1 genanki==0.13.1 Pillow==12.0.0
 ```
 
 ## Usage
