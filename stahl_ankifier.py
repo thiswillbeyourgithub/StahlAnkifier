@@ -523,6 +523,7 @@ def parse_pdf(
     # Drug chapters are identified by titles ending with an uppercase word
     # The page range starts at the item's page and ends at the next section's page
     # Example: '26.0_pp_125_128_BUSPIRONE' -> drug='BUSPIRONE'
+    # Example: '26.0_pp_125_128_METHYLPHENIDATE_(D)' -> drug='METHYLPHENIDATE (D)'
     # Pages are from item["page"] to next_item["page"] - 1
     logger.info("Identifying drug pages from table of contents...")
     drug_page = {}
@@ -532,8 +533,15 @@ def parse_pdf(
         segments = title_text.split("_")
         if segments:
             last_segment = segments[-1]
+
+            # Handle drug names with parenthetical suffixes like (D), (D,L), etc.
+            # If the last segment starts with '(' and there's at least one more segment,
+            # join it with the previous segment (e.g., 'METHYLPHENIDATE' + '(D)')
+            if last_segment.startswith("(") and len(segments) >= 2:
+                last_segment = segments[-2] + " " + last_segment
+
             # Check if the last segment is all uppercase and not empty
-            # This indicates a drug name (e.g., BUSPIRONE, ASPIRIN, etc.)
+            # This indicates a drug name (e.g., BUSPIRONE, METHYLPHENIDATE (D), etc.)
             if last_segment and last_segment.isupper():
                 # Start page is from the current TOC item
                 start_page = item["page"]
@@ -566,6 +574,11 @@ def parse_pdf(
         segments = title_text.split("_")
         if segments:
             last_segment = segments[-1]
+
+            # Handle drug names with parenthetical suffixes (same logic as above)
+            if last_segment.startswith("(") and len(segments) >= 2:
+                last_segment = segments[-2] + " " + last_segment
+
             if last_segment and last_segment.isupper():
                 # Get page range for this drug
                 start_page = item["page"]
