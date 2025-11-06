@@ -1,2 +1,6 @@
 .aider*
 .env*
+
+*.pdf
+*.apkg
+*.html
