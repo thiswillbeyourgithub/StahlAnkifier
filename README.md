@@ -23,13 +23,13 @@ Created with assistance from [aider.chat](https://github.com/Aider-AI/aider/).
 
 **If you're not comfortable using Python or are having trouble running this script, don't worry!**
 
-You can contact me and if you provide proof that you legally own the PDF (e.g., a screenshot of your purchase receipt or the PDF properties showing your name), I'll be happy to send you the pre-converted Anki deck directly.
+You can contact me and if you provide proof that you own the PDF, I'll be happy to send you the pre-converted Anki deck directly.
 
 Reach out via:
 - **GitHub Issues**: Open an issue on this repository
-- **Email**: Contact me via my website at [https://oli.com](https://oli.com)
+- **Email**: Contact me via my website at [https://olicorne.org](https://olicorne.org)
 
-This way everyone who owns the book can benefit from the flashcards, regardless of technical skill level.
+This way everyone who owns the book can benefit from the flashcards, regardless of technical skill level :)
 
 ## Features
 
@@ -96,24 +96,16 @@ The script generates an `.apkg` file (e.g., `stahl_drugs_v1.0.0.apkg`) that can 
 
 4. **Fair Use**: Creating personal study materials from legally purchased educational content falls under fair use doctrine in most jurisdictions.
 
-**Important**: You must own a legal copy of the Stahl Essential Psychopharmacology PDF to use this tool. The script is useless without the purchased PDF as input.
-
 ## Support
 
 If you encounter any issues or have questions:
 
 - **GitHub Issues**: Open an issue on this repository
-- **Email**: Contact me via my website at [https://oli.com](https://oli.com)
-
-When reporting issues, please include:
-- The version of the script you're using
-- Python version
-- Error messages or unexpected behavior
-- PDF version/edition (if relevant)
+- **Email**: Contact me via my website at [https://olicorne.org](https://olicorne.org)
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
+This project is licensed under the GNU General Public License v3.
 
 See the [LICENSE](LICENSE) file for full license text.
 
