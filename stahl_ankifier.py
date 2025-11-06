@@ -33,6 +33,7 @@ import random
 import shutil
 import copy
 import tempfile
+import textwrap
 from pathlib import Path
 from typing import Any, Dict, List, Literal
 
@@ -724,12 +725,12 @@ def parse_pdf(
             templates=[
                 {
                     "name": "Cloze",
-                    "qfmt": """
+                    "qfmt": textwrap.dedent("""
                         <div style="font-size: 20px; margin-bottom: 10px;"><b>{{Drug}}</b></div>
                         <div style="font-size: 16px; margin-bottom: 15px;">{{Section}}</div>
                         <div style="font-size: 14px;">{{cloze:Text}}</div>
-                    """,
-                    "afmt": """
+                    """),
+                    "afmt": textwrap.dedent("""
                         <div style="font-size: 20px; margin-bottom: 10px;"><b>{{Drug}}</b></div>
                         <div style="font-size: 16px; margin-bottom: 15px;">{{Section}}</div>
                         <div style="font-size: 14px;">{{cloze:Text}}</div>
@@ -740,10 +741,10 @@ def parse_pdf(
                                 <div style="margin-top: 10px;">{{Source}}</div>
                             </details>
                         </div>
-                    """,
+                    """),
                 },
             ],
-            css="""
+            css=textwrap.dedent("""
                 .card {
                     font-family: arial;
                     font-size: 14px;
@@ -761,7 +762,7 @@ def parse_pdf(
                     font-weight: bold;
                     color: blue;
                 }
-            """,
+            """),
             model_type=genanki.Model.CLOZE,
         )
     else:
@@ -780,12 +781,12 @@ def parse_pdf(
             templates=[
                 {
                     "name": "Card 1",
-                    "qfmt": """
+                    "qfmt": textwrap.dedent("""
                         <div style="font-size: 20px; margin-bottom: 10px;"><b>{{Drug}}</b></div>
                         <div style="font-size: 16px; margin-bottom: 15px;">{{Section}}</div>
                         <div style="font-size: 18px;">{{Question}}</div>
-                    """,
-                    "afmt": """
+                    """),
+                    "afmt": textwrap.dedent("""
                         {{FrontSide}}
                         <hr id="answer">
                         <div style="margin-top: 15px;">{{Answer}}</div>
@@ -796,10 +797,10 @@ def parse_pdf(
                                 <div style="margin-top: 10px;">{{PageImages}}</div>
                             </details>
                         </div>
-                    """,
+                    """),
                 },
             ],
-            css="""
+            css=textwrap.dedent("""
                 .card {
                     font-family: arial;
                     font-size: 14px;
@@ -813,7 +814,7 @@ def parse_pdf(
                     margin: 10px 0;
                     border: 1px solid #ccc;
                 }
-            """,
+            """),
         )
 
     # Create deck and add notes
