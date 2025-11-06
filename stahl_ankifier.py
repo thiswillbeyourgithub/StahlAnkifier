@@ -401,6 +401,7 @@ def parse_pdf(
     pdf_path: str,
     format: Literal["basic", "singlecloze", "onecloze", "multicloze"] = "basic",
     include_images: bool = True,
+    debug: bool = False,
 ) -> None:
     """
     Parse Stahl's Prescriber's Guide PDF and convert to Anki flashcards.
@@ -420,6 +421,8 @@ def parse_pdf(
         - "multicloze": Each paragraph gets sequential cloze numbers {{c1::}}, {{c2::}}, etc.
     include_images : bool, optional
         Whether to include page images in the source field (default: True).
+    debug : bool, optional
+        Whether to enter debugger at the end for inspection (default: False).
 
     Notes
     -----
@@ -913,7 +916,8 @@ def parse_pdf(
     # - drug_content: Dict mapping drug names to hierarchical content structure (H1 -> H2 -> HTML)
     # - cards: List of dicts ready to be converted to Anki cards
     # - r: Function to display random cards (call r() or r(k=10))
-    # breakpoint()
+    if debug:
+        breakpoint()
 
 
 def main() -> None:
@@ -966,6 +970,14 @@ def main() -> None:
         help="Do not include page images in the source field.",
     )
 
+    # Add debug flag
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="Enter debugger at the end for inspection (default: False).",
+    )
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -974,6 +986,7 @@ def main() -> None:
         pdf_path=args.pdf_path,
         format=args.format,
         include_images=args.include_images,
+        debug=args.debug,
     )
 
 
