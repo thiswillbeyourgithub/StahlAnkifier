@@ -1,3 +1,5 @@
+**[Français](README_FR.md)** | **English**
+
 # Stahl Ankifier
 
 A Python script to convert Stahl's Essential Psychopharmacology PDF into Anki flashcards for efficient memorization.
