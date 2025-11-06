@@ -390,7 +390,7 @@ def parse_drug_pages(
     return drug_dict
 
 
-def parse_pdf(pdf_path: str, cloze: bool = False) -> None:
+def parse_pdf(pdf_path: str, format: str = "basic") -> None:
     """
     Parse a PDF file and extract metadata, table of contents, and content.
 
@@ -398,11 +398,12 @@ def parse_pdf(pdf_path: str, cloze: bool = False) -> None:
     ----------
     pdf_path : str
         Path to the PDF file to parse.
-    cloze : bool, optional
-        If True, create cloze deletion cards instead of basic Q&A cards.
-        Cloze cards have the drug/section/question in the body with the answer
-        wrapped in {{c1::}}, and source images in a separate field.
-        Default is False (basic Q&A cards).
+    format : str, optional
+        Card format to use:
+        - "basic": Basic Q&A cards with separate question and answer fields (default)
+        - "singlecloze": Single cloze deletion wrapping the entire answer in {{c1::}}
+        - "onecloze": Each paragraph in the answer becomes {{c1::paragraph}}
+        - "multicloze": Each paragraph gets sequential cloze numbers {{c1::}}, {{c2::}}, etc.
 
     Notes
     -----
@@ -422,6 +423,13 @@ def parse_pdf(pdf_path: str, cloze: bool = False) -> None:
         raise FileNotFoundError(f"PDF file not found: {pdf_path}")
     if pdf_file.suffix.lower() != ".pdf":
         raise ValueError(f"File must be a PDF, got: {pdf_file.suffix}")
+    
+    # Validate format parameter
+    valid_formats = ["basic", "singlecloze", "onecloze", "multicloze"]
+    if format not in valid_formats:
+        raise ValueError(
+            f"Invalid format: {format}. Must be one of {valid_formats}"
+        )
 
     # Open the PDF document
     logger.warning("Opening PDF file")
@@ -636,14 +644,20 @@ def parse_pdf(pdf_path: str, cloze: bool = False) -> None:
 
     # Create genanki model (card template)
     # This defines the structure and layout of the cards
-    # Two model types: basic Q&A or cloze deletion
+    # Multiple model types: basic Q&A or various cloze deletion formats
     logger.info("Creating Anki deck with genanki...")
 
-    if cloze:
-        # Cloze model: body contains drug/section/question + {{c1::answer}}, source contains images
+    if format != "basic":
+        # Cloze model: body contains drug/section/question + cloze-wrapped answer, source contains images
+        # Model ID varies by format to allow different deck types
+        model_ids = {
+            "singlecloze": 1607392320,
+            "onecloze": 1607392321,
+            "multicloze": 1607392322,
+        }
         anki_model = genanki.Model(
-            model_id=1607392320,  # Different ID for cloze model
-            name="Stahl Drug Cloze",
+            model_id=model_ids[format],
+            name=f"Stahl Drug {format.title()}",
             fields=[
                 {"name": "Text"},
                 {"name": "Source"},
@@ -748,26 +762,7 @@ def parse_pdf(pdf_path: str, cloze: bool = False) -> None:
 
     logger.info("Adding notes to deck...")
     for card in tqdm(cards, desc="Adding notes"):
-        if cloze:
-            # For cloze cards: body contains drug/section/question + {{c1::answer}}
-            # Format: Drug name in bold, section, question, then cloze-wrapped answer
-            text_content = (
-                f"<div style='font-size: 20px; margin-bottom: 10px;'><b>{card['Drug']}</b></div>"
-                f"<div style='font-size: 16px; color: #666; margin-bottom: 10px;'>{card['Section']}</div>"
-                f"<div style='font-size: 18px; margin-bottom: 15px;'>{card['Question']}</div>"
-                f"<div style='margin-top: 15px;'>{{{{c1::{card['Answer']}}}}}</div>"
-            )
-
-            note = genanki.Note(
-                model=anki_model,
-                fields=[
-                    text_content,
-                    card["PageImages"],
-                    ", ".join(card["Tags"]),
-                ],
-                tags=card["Tags"],
-            )
-        else:
+        if format == "basic":
             # Basic Q&A cards: separate fields
             note = genanki.Note(
                 model=anki_model,
@@ -778,6 +773,46 @@ def parse_pdf(pdf_path: str, cloze: bool = False) -> None:
                     card["Answer"],
                     ", ".join(card["Tags"]),
                     card["PageImages"],
+                ],
+                tags=card["Tags"],
+            )
+        else:
+            # Cloze cards: format the answer based on cloze type
+            answer_html = card["Answer"]
+            
+            if format == "singlecloze":
+                # Wrap entire answer in {{c1::}}
+                cloze_answer = f"{{{{c1::{answer_html}}}}}"
+            elif format == "onecloze":
+                # Wrap each <p> tag content in {{c1::}}
+                soup = BeautifulSoup(answer_html, "html.parser")
+                for p in soup.find_all("p"):
+                    p_content = str(p)[3:-4]  # Remove <p> and </p>
+                    p.string = f"{{{{c1::{p_content}}}}}"
+                cloze_answer = str(soup)
+            elif format == "multicloze":
+                # Wrap each <p> tag content in sequential cloze numbers
+                soup = BeautifulSoup(answer_html, "html.parser")
+                paragraphs = soup.find_all("p")
+                for idx, p in enumerate(paragraphs, start=1):
+                    p_content = str(p)[3:-4]  # Remove <p> and </p>
+                    p.string = f"{{{{c{idx}::{p_content}}}}}"
+                cloze_answer = str(soup)
+            
+            # Format: Drug name in bold, section, question, then cloze-wrapped answer
+            text_content = (
+                f"<div style='font-size: 20px; margin-bottom: 10px;'><b>{card['Drug']}</b></div>"
+                f"<div style='font-size: 16px; color: #666; margin-bottom: 10px;'>{card['Section']}</div>"
+                f"<div style='font-size: 18px; margin-bottom: 15px;'>{card['Question']}</div>"
+                f"<div style='margin-top: 15px;'>{cloze_answer}</div>"
+            )
+
+            note = genanki.Note(
+                model=anki_model,
+                fields=[
+                    text_content,
+                    card["PageImages"],
+                    ", ".join(card["Tags"]),
                 ],
                 tags=card["Tags"],
             )
