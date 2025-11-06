@@ -520,38 +520,50 @@ def parse_pdf(
     doc.close()
 
     # Extract drug pages from table of contents
-    # Drug chapters are identified by titles ending with an uppercase word
+    # Drug chapters are identified by format: number_pp_startpage_endpage_DRUGNAME
     # The page range starts at the item's page and ends at the next section's page
     # Example: '26.0_pp_125_128_BUSPIRONE' -> drug='BUSPIRONE'
+    # Example: '90.0_pp_497_502_METHYLPHENIDATE_D' -> drug='METHYLPHENIDATE_D'
     # Pages are from item["page"] to next_item["page"] - 1
     logger.info("Identifying drug pages from table of contents...")
     drug_page = {}
     for idx, item in enumerate(table_of_contents):
         title_text = item["title"]
-        # Split by underscore to get segments
-        segments = title_text.split("_")
-        if segments:
-            last_segment = segments[-1]
-            # Check if the last segment is all uppercase and not empty
-            # This indicates a drug name (e.g., BUSPIRONE, ASPIRIN, etc.)
-            if last_segment and last_segment.isupper():
-                # Start page is from the current TOC item
-                start_page = item["page"]
+        
+        # Look for _pp_ pattern to extract drug name
+        if "_pp_" in title_text:
+            # Split by _pp_ to get the part after
+            after_pp = title_text.split("_pp_", 1)[1]
+            # after_pp example: "497_502_METHYLPHENIDATE_D"
+            
+            # Split by underscore to get page numbers and drug name parts
+            parts = after_pp.split("_")
+            # parts example: ['497', '502', 'METHYLPHENIDATE', 'D']
+            
+            # Skip first two (page numbers) and join the rest as drug name
+            if len(parts) >= 3:
+                drug_name = "_".join(parts[2:])
+                # drug_name example: "METHYLPHENIDATE_D"
+                
+                # Verify it's all uppercase (drug names are uppercase in TOC)
+                if drug_name and drug_name.replace("_", "").isupper():
+                    # Start page is from the current TOC item
+                    start_page = item["page"]
 
-                # End page is the page before the next TOC item, or total pages if this is the last item
-                if idx + 1 < len(table_of_contents):
-                    end_page = table_of_contents[idx + 1]["page"] - 1
-                else:
-                    end_page = pdf_data["total_pages"]
+                    # End page is the page before the next TOC item, or total pages if this is the last item
+                    if idx + 1 < len(table_of_contents):
+                        end_page = table_of_contents[idx + 1]["page"] - 1
+                    else:
+                        end_page = pdf_data["total_pages"]
 
-                # Collect content from all pages in the range
-                pages_content = []
-                for page_num in range(start_page, end_page + 1):
-                    # page_contents uses 1-based indexing
-                    if page_num in page_contents:
-                        pages_content.append(page_contents[page_num])
+                    # Collect content from all pages in the range
+                    pages_content = []
+                    for page_num in range(start_page, end_page + 1):
+                        # page_contents uses 1-based indexing
+                        if page_num in page_contents:
+                            pages_content.append(page_contents[page_num])
 
-                drug_page[last_segment] = pages_content
+                    drug_page[drug_name] = pages_content
 
     logger.info(f"Found {len(drug_page)} drugs to process")
 
@@ -563,25 +575,31 @@ def parse_pdf(
     drug_page_ranges: Dict[str, tuple[int, int]] = {}
     for idx, item in enumerate(table_of_contents):
         title_text = item["title"]
-        segments = title_text.split("_")
-        if segments:
-            last_segment = segments[-1]
-            if last_segment and last_segment.isupper():
-                # Get page range for this drug
-                start_page = item["page"]
-                if idx + 1 < len(table_of_contents):
-                    end_page = table_of_contents[idx + 1]["page"] - 1
-                else:
-                    end_page = pdf_data["total_pages"]
+        
+        # Look for _pp_ pattern to extract drug name (same logic as above)
+        if "_pp_" in title_text:
+            after_pp = title_text.split("_pp_", 1)[1]
+            parts = after_pp.split("_")
+            
+            if len(parts) >= 3:
+                drug_name = "_".join(parts[2:])
+                
+                if drug_name and drug_name.replace("_", "").isupper():
+                    # Get page range for this drug
+                    start_page = item["page"]
+                    if idx + 1 < len(table_of_contents):
+                        end_page = table_of_contents[idx + 1]["page"] - 1
+                    else:
+                        end_page = pdf_data["total_pages"]
 
-                # Collect images for all pages in this drug's range
-                images_for_drug = []
-                for page_num in range(start_page, end_page + 1):
-                    if page_num in page_images:
-                        images_for_drug.append(page_images[page_num])
+                    # Collect images for all pages in this drug's range
+                    images_for_drug = []
+                    for page_num in range(start_page, end_page + 1):
+                        if page_num in page_images:
+                            images_for_drug.append(page_images[page_num])
 
-                drug_images[last_segment] = images_for_drug
-                drug_page_ranges[last_segment] = (start_page, end_page)
+                    drug_images[drug_name] = images_for_drug
+                    drug_page_ranges[drug_name] = (start_page, end_page)
 
     logger.info(f"Collected images and page ranges for {len(drug_images)} drugs")
 
