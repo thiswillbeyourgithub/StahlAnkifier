@@ -1,6 +1,5 @@
 # /// script
 # dependencies = [
-#   "fire==0.7.1",
 #   "pymupdf==1.26.4",
 #   "beautifulsoup4==4.14.2",
 #   "loguru==0.7.3",
@@ -19,6 +18,7 @@ Uses PyMuPDF (fitz) for PDF parsing and Fire for CLI argument handling.
 Created with assistance from aider.chat (https://github.com/Aider-AI/aider/)
 """
 
+import argparse
 import io
 import random
 import shutil
@@ -26,7 +26,6 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Literal
 
-import fire
 import fitz  # PyMuPDF
 import genanki
 from bs4 import BeautifulSoup, Tag
@@ -908,16 +907,61 @@ def main() -> None:
     """
     Entry point for the CLI application.
 
-    Uses Fire to automatically generate CLI interface from parse_pdf function.
+    Uses argparse to provide CLI interface for parse_pdf function.
     """
-    import sys
+    # Create argument parser with module docstring as description
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
 
-    # Convert -h to --help for Fire compatibility
-    # This allows both -h and --help to display help text
-    if "-h" in sys.argv:
-        sys.argv[sys.argv.index("-h")] = "--help"
+    # Add positional argument for PDF path
+    parser.add_argument(
+        "pdf_path",
+        type=str,
+        help="Path to the PDF file to parse.",
+    )
 
-    fire.Fire(parse_pdf)
+    # Add format argument with choices
+    parser.add_argument(
+        "--format",
+        type=str,
+        default="basic",
+        choices=["basic", "singlecloze", "onecloze", "multicloze"],
+        help=(
+            "Card format to use: "
+            "'basic' for Q&A cards (default), "
+            "'singlecloze' for single cloze wrapping entire answer, "
+            "'onecloze' for each paragraph as c1, "
+            "'multicloze' for sequential cloze numbers per paragraph."
+        ),
+    )
+
+    # Add include_images flag
+    parser.add_argument(
+        "--include-images",
+        dest="include_images",
+        action="store_true",
+        default=True,
+        help="Include page images in the source field (default: True).",
+    )
+
+    parser.add_argument(
+        "--no-include-images",
+        dest="include_images",
+        action="store_false",
+        help="Do not include page images in the source field.",
+    )
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Call parse_pdf with parsed arguments
+    parse_pdf(
+        pdf_path=args.pdf_path,
+        format=args.format,
+        include_images=args.include_images,
+    )
 
 
 if __name__ == "__main__":
