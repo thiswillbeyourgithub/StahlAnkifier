@@ -908,6 +908,13 @@ def main() -> None:
 
     Uses Fire to automatically generate CLI interface from parse_pdf function.
     """
+    import sys
+
+    # Convert -h to --help for Fire compatibility
+    # This allows both -h and --help to display help text
+    if "-h" in sys.argv:
+        sys.argv[sys.argv.index("-h")] = "--help"
+
     fire.Fire(parse_pdf)
 
 
