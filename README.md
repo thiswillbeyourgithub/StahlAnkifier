@@ -4,6 +4,12 @@
 
 A Python script to convert the PDF of **Stahl's Essential Psychopharmacology: Prescriber's Guide, 8th Edition** into Anki flashcards for efficient memorization.
 
+In other words, it turns this:
+![](./images/page.png)
+
+Into this:
+![](./images/card.png)
+
 **Book Information:**
 - Title: Prescriber's Guide - Stahl's Essential Psychopharmacology, 8th Edition
 - ISBN: 9781009464772
