@@ -116,7 +116,7 @@ uv run stahl_ankifier.py your_stahl_pdf.pdf --no-include-images
 
 ### Output
 
-The script generates an `.apkg` file (e.g., `stahl_drugs_v1.0.0.apkg`) that can be imported directly into Anki.
+The script generates an `.apkg` file (e.g., `stahl_drugs_v2.3.0.apkg`) that can be imported directly into Anki.
 
 The resulting deck contains approximately **787 cards** and is about **57 MB** in size (including source page images).
 
