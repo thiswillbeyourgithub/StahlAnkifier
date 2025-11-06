@@ -86,6 +86,8 @@ Cela crée des cartes à trous où le médicament/section/question sont affiché
 
 Le script génère un fichier `.apkg` (par exemple, `stahl_drugs_v1.0.0.apkg`) qui peut être importé directement dans Anki.
 
+Le paquet résultant contient environ **787 cartes** et fait environ **57 Mo** (y compris les images des pages sources).
+
 ## Avis juridique
 
 **Cet outil est complètement légal pour les raisons suivantes :**

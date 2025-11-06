@@ -86,6 +86,8 @@ This creates cloze cards where the drug/section/question are shown with the answ
 
 The script generates an `.apkg` file (e.g., `stahl_drugs_v1.0.0.apkg`) that can be imported directly into Anki.
 
+The resulting deck contains approximately **787 cards** and is about **57 MB** in size (including source page images).
+
 ## Legal Notice
 
 **This tool is completely legal for the following reasons:**
