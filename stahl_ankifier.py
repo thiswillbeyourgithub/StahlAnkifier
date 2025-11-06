@@ -530,9 +530,11 @@ def parse_pdf(pdf_path: str, format: str = "basic", source: str = "images") -> N
     logger.info(f"Found {len(drug_page)} drugs to process")
 
     # Build drug_images dict mapping drug names to their page images
+    # Also track page ranges for each drug to display in source field
     # This allows including source pages as images in Anki cards for visual reference
-    logger.info("Collecting page images for each drug...")
+    logger.info("Collecting page images and page ranges for each drug...")
     drug_images: Dict[str, List[bytes]] = {}
+    drug_page_ranges: Dict[str, tuple[int, int]] = {}
     for idx, item in enumerate(table_of_contents):
         title_text = item["title"]
         segments = title_text.split("_")
@@ -553,8 +555,9 @@ def parse_pdf(pdf_path: str, format: str = "basic", source: str = "images") -> N
                         images_for_drug.append(page_images[page_num])
 
                 drug_images[last_segment] = images_for_drug
+                drug_page_ranges[last_segment] = (start_page, end_page)
 
-    logger.info(f"Collected images for {len(drug_images)} drugs")
+    logger.info(f"Collected images and page ranges for {len(drug_images)} drugs")
 
     # Parse each drug's pages into hierarchical structure
     # The structure is: drug_name -> H1 header -> H2 header -> HTML content list
@@ -586,10 +589,14 @@ def parse_pdf(pdf_path: str, format: str = "basic", source: str = "images") -> N
     logger.info("Creating Anki cards from parsed content...")
     cards: List[Dict[str, Any]] = []
     for drug_name, h1_dict in tqdm(drug_content.items(), desc="Creating cards"):
+        # Get page range for this drug to display at top of source field
+        page_range = drug_page_ranges.get(drug_name, (0, 0))
+        page_range_text = f"<div style='font-weight: bold; margin-bottom: 10px;'>Pages: {page_range[0]}-{page_range[1]}</div>"
+        
         # Write images for this drug to temp directory and create img tags
         # All cards for a drug will reference the same set of page images
         # Only include images if source=="images"
-        page_images_html = ""
+        page_images_html = page_range_text  # Always include page range
         if source == "images":
             drug_name_for_file = drug_name.lower().replace(" ", "_")
             img_tags = []
@@ -600,8 +607,8 @@ def parse_pdf(pdf_path: str, format: str = "basic", source: str = "images") -> N
                 media_files.append(str(filepath))
                 img_tags.append(f'<img src="{filename}">')
 
-            # Combine all img tags with line breaks for readability
-            page_images_html = "<br>".join(img_tags)
+            # Combine page range with img tags, separated by line breaks
+            page_images_html = page_range_text + "<br>" + "<br>".join(img_tags)
 
         for h1_header, h2_dict in h1_dict.items():
             for h2_header, content_list in h2_dict.items():
