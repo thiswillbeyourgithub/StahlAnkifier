@@ -36,10 +36,12 @@ De cette façon, toute personne possédant le livre peut bénéficier des cartes
 ## Fonctionnalités
 
 - **Détection automatique de la structure** : Identifie les chapitres sur les médicaments et les sections hiérarchiques
-- **Deux types de cartes** :
-  - Cartes Q&R basiques (par défaut)
-  - Cartes à suppression de texte à trous (`--cloze`)
-- **Référence visuelle** : Inclut les images des pages sources sur chaque carte
+- **Quatre formats de cartes** :
+  - Cartes Q&R basiques avec champs question/réponse séparés (par défaut)
+  - Suppression à trous simple enveloppant la réponse entière (`--format singlecloze`)
+  - Une suppression à trous par paragraphe, toutes utilisant c1 (`--format onecloze`)
+  - Multi-suppressions à trous avec numérotation séquentielle par paragraphe (`--format multicloze`)
+- **Référence visuelle** : Inclut optionnellement les images des pages sources sur chaque carte
 - **Formatage intelligent** :
   - Préserve le formatage important (gras, italique, liens)
   - Fusionne les paragraphes divisés par le retour à la ligne du PDF
@@ -76,11 +78,30 @@ Cela crée un paquet avec des champs séparés pour le nom du médicament, la se
 
 ### Cartes à suppression de texte à trous
 
+Le script prend en charge trois formats de suppression à trous :
+
+**Suppression à trous simple (réponse entière enveloppée dans c1) :**
 ```bash
-uv run stahl_ankifier.py votre_pdf_stahl.pdf --cloze
+uv run stahl_ankifier.py votre_pdf_stahl.pdf --format singlecloze
 ```
 
-Cela crée des cartes à trous où le médicament/section/question sont affichés avec la réponse enveloppée dans la syntaxe de suppression à trous `{{c1::}}`.
+**Une suppression à trous par paragraphe (toutes utilisant c1) :**
+```bash
+uv run stahl_ankifier.py votre_pdf_stahl.pdf --format onecloze
+```
+
+**Multi-suppressions à trous (numérotation séquentielle par paragraphe) :**
+```bash
+uv run stahl_ankifier.py votre_pdf_stahl.pdf --format multicloze
+```
+
+### Exclure les images de pages
+
+Par défaut, les images des pages sources sont incluses dans chaque carte. Pour les exclure et réduire la taille du paquet :
+
+```bash
+uv run stahl_ankifier.py votre_pdf_stahl.pdf --no-include-images
+```
 
 ### Sortie
 
