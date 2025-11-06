@@ -738,7 +738,7 @@ def parse_pdf(
                         <div style="margin-top: 15px;">
                             <details open>
                                 <summary style="cursor: pointer; ">Source Pages</summary>
-                                <div style="margin-top: 10px;">{{Source}}</div>
+                                <div style="margin-top: 10px; text-align: center;">{{Source}}</div>
                             </details>
                         </div>
                     """),
@@ -794,7 +794,7 @@ def parse_pdf(
                         <div style="margin-top: 15px;">
                             <details open>
                                 <summary style="cursor: pointer; ">Source Pages</summary>
-                                <div style="margin-top: 10px;">{{PageImages}}</div>
+                                <div style="margin-top: 10px; text-align: center;">{{PageImages}}</div>
                             </details>
                         </div>
                     """),
