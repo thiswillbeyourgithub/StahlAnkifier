@@ -679,7 +679,7 @@ def parse_pdf(
     logger.info("Creating Anki deck with genanki...")
 
     if format != "basic":
-        # Cloze model: body contains drug/section/question + cloze-wrapped answer, source contains images
+        # Cloze model: separate fields for drug, section, question+answer, and source images
         # Model ID varies by format to allow different deck types
         model_ids = {
             "singlecloze": 1607392320,
@@ -690,6 +690,8 @@ def parse_pdf(
             model_id=model_ids[format],
             name=f"Stahl Drug {format.title()}",
             fields=[
+                {"name": "Drug"},
+                {"name": "Section"},
                 {"name": "Text"},
                 {"name": "Source"},
                 {"name": "Tags"},
@@ -698,9 +700,13 @@ def parse_pdf(
                 {
                     "name": "Cloze",
                     "qfmt": """
+                        <div style="font-size: 20px; margin-bottom: 10px;"><b>{{Drug}}</b></div>
+                        <div style="font-size: 16px; margin-bottom: 15px;">{{Section}}</div>
                         <div style="font-size: 14px;">{{cloze:Text}}</div>
                     """,
                     "afmt": """
+                        <div style="font-size: 20px; margin-bottom: 10px;"><b>{{Drug}}</b></div>
+                        <div style="font-size: 16px; margin-bottom: 15px;">{{Section}}</div>
                         <div style="font-size: 14px;">{{cloze:Text}}</div>
                         <hr>
                         <div style="margin-top: 15px;">
@@ -872,10 +878,9 @@ def parse_pdf(
             assert "{{c" in cloze_answer, f"Answer is missing start of cloze: {cloze_answer}\n{original}"
             assert "}}" in cloze_answer, f"Answer is missing end of cloze: {cloze_answer}\n{original}"
 
-            # Format: Drug name in bold, section, question, then cloze-wrapped answer
+            # Format: Question followed by cloze-wrapped answer
+            # Drug and Section are now separate fields
             text_content = (
-                f"<div style='font-size: 20px; margin-bottom: 10px;'><b>{card['Drug']}</b></div>"
-                f"<div style='font-size: 16px; margin-bottom: 10px;'>{card['Section']}</div>"
                 f"<div style='font-size: 18px; margin-bottom: 15px;'>{card['Question']}</div>"
                 f"<div style='margin-top: 15px;'>{cloze_answer}</div>"
             )
@@ -883,6 +888,8 @@ def parse_pdf(
             note = genanki.Note(
                 model=anki_model,
                 fields=[
+                    card["Drug"],
+                    card["Section"],
                     text_content,
                     card["PageImages"],
                     ", ".join(card["Tags"]),
