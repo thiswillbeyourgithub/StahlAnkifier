@@ -44,8 +44,8 @@ De cette façon, toute personne possédant le livre peut bénéficier des cartes
 - **Quatre formats de cartes** :
   - Cartes Q&R basiques avec champs question/réponse séparés (par défaut)
   - Suppression à trous simple enveloppant la réponse entière (`--format singlecloze`)
-  - Une suppression à trous par paragraphe, toutes utilisant c1 (`--format onecloze`)
-  - Multi-suppressions à trous avec numérotation séquentielle par paragraphe (`--format multicloze`)
+  - Une suppression à trous par ligne, toutes utilisant c1 (`--format onecloze`)
+  - Multi-suppressions à trous avec numérotation séquentielle par ligne (`--format multicloze`)
 - **Référence visuelle** : Inclut optionnellement les images des pages sources sur chaque carte
 - **Formatage intelligent** :
   - Préserve le formatage important (gras, italique, liens)

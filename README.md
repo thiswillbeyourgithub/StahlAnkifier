@@ -50,8 +50,8 @@ This way everyone who owns the book can benefit from the flashcards, regardless 
 - **Four card formats**: 
   - Basic Q&A cards with separate question/answer fields (default)
   - Single cloze deletion wrapping the entire answer (`--format singlecloze`)
-  - One cloze per paragraph, all using c1 (`--format onecloze`)
-  - Multi-cloze with sequential numbering per paragraph (`--format multicloze`)
+  - One cloze per line, all using c1 (`--format onecloze`)
+  - Multi-cloze with sequential numbering per line (`--format multicloze`)
 - **Visual reference**: Optionally includes source page images on each card
 - **Smart formatting**: 
   - Preserves important formatting (bold, italic, links)
