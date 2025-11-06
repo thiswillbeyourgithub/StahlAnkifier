@@ -393,7 +393,7 @@ def parse_drug_pages(
 def parse_pdf(
     pdf_path: str,
     format: Literal["basic", "singlecloze", "onecloze", "multicloze"] = "basic",
-    source: str = "images",
+    include_images: bool = True,
 ) -> None:
     """
     Parse a PDF file and extract metadata, table of contents, and content.
@@ -408,10 +408,8 @@ def parse_pdf(
         - "singlecloze": Single cloze deletion wrapping the entire answer in {{c1::}}
         - "onecloze": Each paragraph in the answer becomes {{c1::paragraph}}
         - "multicloze": Each paragraph gets sequential cloze numbers {{c1::}}, {{c2::}}, etc.
-    source : str, optional
-        Whether to include page images in the source field:
-        - "images": Include page images (default)
-        - Any other value: Don't include images
+    include_images : bool, optional
+        Whether to include page images in the source field (default: True).
 
     Notes
     -----
@@ -599,9 +597,9 @@ def parse_pdf(
 
         # Write images for this drug to temp directory and create img tags
         # All cards for a drug will reference the same set of page images
-        # Only include images if source=="images"
+        # Only include images if include_images is True
         page_images_html = page_range_text  # Always include page range
-        if source == "images":
+        if include_images:
             drug_name_for_file = drug_name.lower().replace(" ", "_")
             img_tags = []
             for page_idx, img_bytes in enumerate(drug_images.get(drug_name, [])):
