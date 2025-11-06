@@ -830,6 +830,9 @@ def parse_pdf(
             else:
                 raise ValueError(format)
 
+            assert "{{c" in cloze_answer, f"Answer is missing start of cloze: {cloze_answer}"
+            assert "}}" in cloze_answer, f"Answer is missing end of cloze: {cloze_answer}"
+
             # Format: Drug name in bold, section, question, then cloze-wrapped answer
             text_content = (
                 f"<div style='font-size: 20px; margin-bottom: 10px;'><b>{card['Drug']}</b></div>"
