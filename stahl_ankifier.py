@@ -529,22 +529,22 @@ def parse_pdf(
     drug_page = {}
     for idx, item in enumerate(table_of_contents):
         title_text = item["title"]
-        
+
         # Look for _pp_ pattern to extract drug name
         if "_pp_" in title_text:
             # Split by _pp_ to get the part after
             after_pp = title_text.split("_pp_", 1)[1]
             # after_pp example: "497_502_METHYLPHENIDATE_D"
-            
+
             # Split by underscore to get page numbers and drug name parts
             parts = after_pp.split("_")
             # parts example: ['497', '502', 'METHYLPHENIDATE', 'D']
-            
+
             # Skip first two (page numbers) and join the rest as drug name
             if len(parts) >= 3:
                 drug_name = "_".join(parts[2:])
                 # drug_name example: "METHYLPHENIDATE_D"
-                
+
                 # Verify it's all uppercase (drug names are uppercase in TOC)
                 if drug_name and drug_name.replace("_", "").isupper():
                     # Start page is from the current TOC item
@@ -575,15 +575,15 @@ def parse_pdf(
     drug_page_ranges: Dict[str, tuple[int, int]] = {}
     for idx, item in enumerate(table_of_contents):
         title_text = item["title"]
-        
+
         # Look for _pp_ pattern to extract drug name (same logic as above)
         if "_pp_" in title_text:
             after_pp = title_text.split("_pp_", 1)[1]
             parts = after_pp.split("_")
-            
+
             if len(parts) >= 3:
                 drug_name = "_".join(parts[2:])
-                
+
                 if drug_name and drug_name.replace("_", "").isupper():
                     # Get page range for this drug
                     start_page = item["page"]
