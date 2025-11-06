@@ -685,7 +685,7 @@ def parse_pdf(
                 question = h2_header if h2_header.endswith("?") else f"{h2_header}?"
 
                 card = {
-                    "Drug": drug_name.replace('_', ' ').title(),
+                    "Drug": drug_name.replace("_", " ").title(),
                     "Section": h1_header.title(),
                     "Question": question,
                     "Answer": answer_text,
