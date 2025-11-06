@@ -820,8 +820,21 @@ def parse_pdf(
                         p_content = str(p)[3:-4]  # Remove <p> and </p>
                         p.string = "{{c1::" + p_content + "}}"
                     cloze_answer = str(soup)
+                elif "<br/>" in str(soup):
+                    cloze_answer = "{{c1::"
+                    for br in str(soup).split("<br/>"):
+                        cloze_answer += br
+                        cloze_answer += "}}<br/>{{c1::"
+                    cloze_answer += "}}"
+                elif len(str(soup).strip().splitlines()) > 1:
+                    cloze_answer = "{{c1::"
+                    for br in str(soup).splitlines():
+                        cloze_answer += br
+                        cloze_answer += "}}<br/>{{c1::"
+                    cloze_answer += "}}"
                 else:
                     cloze_answer = "{{c1::" + str(soup) + "}}"
+
             elif format == "multicloze":
                 # Wrap each <p> tag content in sequential cloze numbers
                 soup = BeautifulSoup(answer_html, "html.parser")
@@ -831,6 +844,18 @@ def parse_pdf(
                         p_content = str(p)[3:-4]  # Remove <p> and </p>
                         p.string = "{{c" + idx + "::" + p_content + "}}"
                     cloze_answer = str(soup)
+                elif "<br/>" in str(soup):
+                    cloze_answer = "{{c1::"
+                    for ibr, br in enumerate(str(soup).split("<br/>")):
+                        cloze_answer += br
+                        cloze_answer += "}}<br/>{{c" + str(ibr + 1) + "::"
+                    cloze_answer += "}}"
+                elif len(str(soup).strip().splitlines()) > 1:
+                    cloze_answer = "{{c1::"
+                    for ibr, br in enumerate(str(soup).splitlines()):
+                        cloze_answer += br
+                        cloze_answer += "}}<br/>{{c" + str(ibr + 1) + "::"
+                    cloze_answer += "}}"
                 else:
                     cloze_answer = "{{c1::" + str(soup) + "}}"
             else:
