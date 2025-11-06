@@ -229,6 +229,33 @@ def _merge_bullet_paragraphs(html_content: str) -> str:
     return "".join(merged_paragraphs)
 
 
+def _remove_paragraph_tags(html_content: str) -> str:
+    """
+    Remove <p> tags while preserving their content.
+
+    This makes the content easier to edit in Anki by removing
+    unnecessary paragraph wrapper tags. The tags are unwrapped
+    so their content is preserved but the <p> structure is removed.
+
+    Parameters
+    ----------
+    html_content : str
+        HTML content to process
+
+    Returns
+    -------
+    str
+        HTML with <p> tags removed but content preserved
+    """
+    soup = BeautifulSoup(html_content, "html.parser")
+
+    # Find all <p> tags and unwrap them (remove tag but keep content)
+    for p in soup.find_all("p"):
+        p.unwrap()
+
+    return str(soup)
+
+
 def _clean_html_keep_formatting(html_content: str) -> str:
     """
     Clean HTML by removing most tags while preserving formatting tags.
@@ -575,6 +602,10 @@ def parse_pdf(pdf_path: str, cloze: bool = False) -> None:
                 # Clean HTML to keep only formatting tags (bold, italic, links, etc.)
                 # This preserves visual formatting while removing structural bloat
                 answer_text = _clean_html_keep_formatting(combined_html)
+
+                # Remove paragraph tags to make content easier to edit in Anki
+                # This unwraps <p> tags while preserving their content and formatting
+                answer_text = _remove_paragraph_tags(answer_text)
 
                 # Create the card
                 # Format drug name and section with title case for readability
