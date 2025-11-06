@@ -4,7 +4,7 @@
 
 A Python script to convert Stahl's Essential Psychopharmacology PDF into Anki flashcards for efficient memorization.
 
-**Note:** This tool is designed for individuals who have legally purchased the PDF version of Stahl's Essential Psychopharmacology. This script does not contain or distribute any copyrighted content from the book - it only provides functionality to transform your own purchased PDF into Anki flashcards for personal study purposes.
+**Note:** This tool is designed for individuals who own the PDF version of Stahl's Essential Psychopharmacology. This script does not contain or distribute any copyrighted content from the book - it only provides functionality to transform your own purchased PDF into Anki flashcards for personal study purposes.
 
 ## Overview
 
@@ -90,7 +90,7 @@ The resulting deck contains approximately **787 cards** and is about **57 MB** i
 
 ## Legal Notice
 
-**This tool is completely legal for the following reasons:**
+**This tool is completely legal for at least the following reasons:**
 
 1. **No Content Distribution**: This script does not contain, distribute, or provide access to any copyrighted content from Stahl's Essential Psychopharmacology.
 
