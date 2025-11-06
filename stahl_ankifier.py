@@ -852,8 +852,15 @@ def parse_pdf(
             answer_html = answer_html.replace("<i/><i>", "")
 
             # cleanup the footer
-            answer_html = re.sub("https://doi.org/.*?Published online by Cambridge University Press", "", answer_html, flags=re.MULTILINE)
-            answer_html = answer_html.replace("Published online by Cambridge University Press", "")
+            answer_html = re.sub(
+                "https://doi.org/.*?Published online by Cambridge University Press",
+                "",
+                answer_html,
+                flags=re.MULTILINE,
+            )
+            answer_html = answer_html.replace(
+                "Published online by Cambridge University Press", ""
+            )
             answer_html = answer_html.replace(card["Drug"].upper(), "")
             answer_html = answer_html.replace("(continued)", "")
             answer_html = answer_html.strip()
@@ -926,10 +933,14 @@ def parse_pdf(
             cloze_answer = cloze_answer.replace("• ", "")
             cloze_answer = cloze_answer.replace("•", "")
 
-            cloze_answer = re.sub(r"{{c\d*::\s*}}", "", cloze_answer, flags=re.MULTILINE).strip()
+            cloze_answer = re.sub(
+                r"{{c\d*::\s*}}", "", cloze_answer, flags=re.MULTILINE
+            ).strip()
 
             # Remove trailing <br> and <br/> tags
-            cloze_answer = re.sub(r"(<br\s*/?>)+$", "", cloze_answer, flags=re.MULTILINE)
+            cloze_answer = re.sub(
+                r"(<br\s*/?>)+$", "", cloze_answer, flags=re.MULTILINE
+            )
 
             # if "doi.org" in cloze_answer or "doi.org" in original:
             #     print(f"Answer: '{cloze_answer}'")
