@@ -818,6 +818,12 @@ def parse_pdf(
             answer_html = card["Answer"]
             original = copy.deepcopy(answer_html)
 
+            # cleanup
+            answer_html = answer_html.replace("<b><b/>", "")
+            answer_html = answer_html.replace("<i><i/>", "")
+            answer_html = answer_html.replace("<b/><b>", "")
+            answer_html = answer_html.replace("<i/><i>", "")
+
             if format == "singlecloze":
                 # Wrap entire answer in {{c1::}}
                 cloze_answer = "{{c1::<br/>" + answer_html + "<br/>}}"
@@ -844,8 +850,6 @@ def parse_pdf(
                 else:
                     cloze_answer = "{{c1::" + str(soup) + "}}"
 
-                cloze_answer = cloze_answer.replace("• ", "")
-
             elif format == "multicloze":
                 # Wrap each <p> tag content in sequential cloze numbers
                 soup = BeautifulSoup(answer_html, "html.parser")
@@ -869,9 +873,11 @@ def parse_pdf(
                     cloze_answer += "}}"
                 else:
                     cloze_answer = "{{c1::" + str(soup) + "}}"
-                cloze_answer = cloze_answer.replace("• ", "")
             else:
                 raise ValueError(format)
+
+            cloze_answer = cloze_answer.replace("• ", "")
+            cloze_answer = cloze_answer.replace("•", "")
 
             cloze_answer = re.sub(r"{{c\d*::\s*}}", "", cloze_answer).strip()
 
