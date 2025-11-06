@@ -19,6 +19,18 @@ Each card includes:
 
 Created with assistance from [aider.chat](https://github.com/Aider-AI/aider/).
 
+## 🤝 Not Comfortable with Python?
+
+**If you're not comfortable using Python or are having trouble running this script, don't worry!**
+
+You can contact me and if you provide proof that you legally own the PDF (e.g., a screenshot of your purchase receipt or the PDF properties showing your name), I'll be happy to send you the pre-converted Anki deck directly.
+
+Reach out via:
+- **GitHub Issues**: Open an issue on this repository
+- **Email**: Contact me via my website at [https://oli.com](https://oli.com)
+
+This way everyone who owns the book can benefit from the flashcards, regardless of technical skill level.
+
 ## Features
 
 - **Automatic structure detection**: Identifies drug chapters and hierarchical sections
