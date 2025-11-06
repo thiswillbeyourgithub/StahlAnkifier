@@ -10,10 +10,18 @@
 # ///
 
 """
-PDF Parser Script
+Stahl's Prescriber's Guide to Anki Converter
 
-This script parses a PDF file and extracts metadata, table of contents, and content.
-Uses PyMuPDF (fitz) for PDF parsing and Fire for CLI argument handling.
+This script parses the PDF of Stahl's Essential Psychopharmacology: Prescriber's Guide
+(8th Edition, ISBN: 9781009464772, DOI: https://doi.org/10.1017/9781009464772) and
+converts it into Anki flashcards.
+
+The script extracts the hierarchical structure of drug monographs and generates
+flashcards organized by drug name, major sections (H1 headers), and specific topics
+(H2 headers). Each card includes the question/topic, answer content with preserved
+formatting, source page images for reference, and hierarchical tags.
+
+Uses PyMuPDF (fitz) for PDF parsing and genanki for Anki package creation.
 
 Created with assistance from aider.chat (https://github.com/Aider-AI/aider/)
 """
@@ -395,12 +403,15 @@ def parse_pdf(
     include_images: bool = True,
 ) -> None:
     """
-    Parse a PDF file and extract metadata, table of contents, and content.
+    Parse Stahl's Prescriber's Guide PDF and convert to Anki flashcards.
+
+    This function is specifically designed for the 8th Edition of Stahl's Essential
+    Psychopharmacology: Prescriber's Guide (ISBN: 9781009464772).
 
     Parameters
     ----------
     pdf_path : str
-        Path to the PDF file to parse.
+        Path to the Prescriber's Guide PDF file (8th Edition).
     format : Literal["basic", "singlecloze", "onecloze", "multicloze"], optional
         Card format to use:
         - "basic": Basic Q&A cards with separate question and answer fields (default)
@@ -412,13 +423,15 @@ def parse_pdf(
 
     Notes
     -----
-    This function extracts:
-    - Title from metadata
-    - Table of contents with section names and page numbers
-    - Text content from each page
+    This function is designed specifically for the structure of the 8th Edition
+    Prescriber's Guide. It extracts:
+    - Drug monographs with hierarchical sections (H1 and H2 headers)
+    - Content with preserved formatting (bold, italic, links)
+    - Source page images for visual reference
+    - Hierarchical tags for organization in Anki
 
-    After extraction, a breakpoint() is called to allow interactive investigation
-    of the extracted data.
+    The resulting Anki deck contains approximately 787 cards organized by drug
+    name and section.
     """
     # Convert to Path object for better path handling
     pdf_file = Path(pdf_path)

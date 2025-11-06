@@ -2,13 +2,18 @@
 
 # Stahl Ankifier
 
-A Python script to convert Stahl's Essential Psychopharmacology PDF into Anki flashcards for efficient memorization.
+A Python script to convert the PDF of **Stahl's Essential Psychopharmacology: Prescriber's Guide, 8th Edition** into Anki flashcards for efficient memorization.
 
-**Note:** This tool is designed for individuals who own the PDF version of Stahl's Essential Psychopharmacology. This script does not contain or distribute any copyrighted content from the book - it only provides functionality to transform your own purchased PDF into Anki flashcards for personal study purposes.
+**Book Information:**
+- Title: Prescriber's Guide - Stahl's Essential Psychopharmacology, 8th Edition
+- ISBN: 9781009464772
+- DOI: https://doi.org/10.1017/9781009464772
+
+**Note:** This tool is designed for individuals who own the PDF version of this specific edition of the Prescriber's Guide. This script does not contain or distribute any copyrighted content from the book - it only provides functionality to transform your own purchased PDF into Anki flashcards for personal study purposes.
 
 ## Overview
 
-This script parses the PDF structure of Stahl's Essential Psychopharmacology and automatically generates Anki flashcards organized by:
+This script parses the PDF structure of the Prescriber's Guide (8th Edition) and automatically generates Anki flashcards organized by:
 - Drug name
 - Major sections (H1 headers)
 - Specific topics (H2 headers)
@@ -140,4 +145,4 @@ Contributions are welcome! Please feel free to submit pull requests or open issu
 
 ## Disclaimer
 
-This software is provided "as is" without warranty of any kind. The author is not affiliated with or endorsed by the publishers of Stahl's Essential Psychopharmacology. Users are responsible for ensuring their use of this tool complies with applicable copyright laws in their jurisdiction.
+This software is provided "as is" without warranty of any kind. The author is not affiliated with or endorsed by the publishers of Stahl's Essential Psychopharmacology: Prescriber's Guide. Users are responsible for ensuring their use of this tool complies with applicable copyright laws in their jurisdiction.

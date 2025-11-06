@@ -2,13 +2,18 @@
 
 # Stahl Ankifier
 
-Un script Python pour convertir le PDF de Stahl's Essential Psychopharmacology en cartes Anki pour une mémorisation efficace.
+Un script Python pour convertir le PDF de **Stahl's Essential Psychopharmacology: Prescriber's Guide, 8e Édition** en cartes Anki pour une mémorisation efficace.
 
-**Remarque :** Cet outil est conçu pour les personnes qui possèdent la version PDF de Stahl's Essential Psychopharmacology. Ce script ne contient ni ne distribue aucun contenu protégé par des droits d'auteur du livre - il fournit uniquement des fonctionnalités pour transformer votre propre PDF acheté en cartes Anki à des fins d'étude personnelle.
+**Informations sur le livre :**
+- Titre : Prescriber's Guide - Stahl's Essential Psychopharmacology, 8e Édition
+- ISBN : 9781009464772
+- DOI : https://doi.org/10.1017/9781009464772
+
+**Remarque :** Cet outil est conçu pour les personnes qui possèdent la version PDF de cette édition spécifique du Prescriber's Guide. Ce script ne contient ni ne distribue aucun contenu protégé par des droits d'auteur du livre - il fournit uniquement des fonctionnalités pour transformer votre propre PDF acheté en cartes Anki à des fins d'étude personnelle.
 
 ## Vue d'ensemble
 
-Ce script analyse la structure PDF de Stahl's Essential Psychopharmacology et génère automatiquement des cartes Anki organisées par :
+Ce script analyse la structure PDF du Prescriber's Guide (8e Édition) et génère automatiquement des cartes Anki organisées par :
 - Nom du médicament
 - Sections principales (en-têtes H1)
 - Sujets spécifiques (en-têtes H2)
@@ -140,4 +145,4 @@ Les contributions sont les bienvenues ! N'hésitez pas à soumettre des pull req
 
 ## Avertissement
 
-Ce logiciel est fourni "tel quel" sans garantie d'aucune sorte. L'auteur n'est pas affilié à ou approuvé par les éditeurs de Stahl's Essential Psychopharmacology. Les utilisateurs sont responsables de s'assurer que leur utilisation de cet outil est conforme aux lois applicables sur les droits d'auteur dans leur juridiction.
+Ce logiciel est fourni "tel quel" sans garantie d'aucune sorte. L'auteur n'est pas affilié à ou approuvé par les éditeurs de Stahl's Essential Psychopharmacology: Prescriber's Guide. Les utilisateurs sont responsables de s'assurer que leur utilisation de cet outil est conforme aux lois applicables sur les droits d'auteur dans leur juridiction.
