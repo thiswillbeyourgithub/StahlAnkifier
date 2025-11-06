@@ -234,11 +234,12 @@ def _merge_bullet_paragraphs(html_content: str) -> str:
 
 def _remove_paragraph_tags(html_content: str) -> str:
     """
-    Remove <p> tags while preserving their content.
+    Remove <p> tags while preserving their content and adding line breaks.
 
     This makes the content easier to edit in Anki by removing
-    unnecessary paragraph wrapper tags. The tags are unwrapped
-    so their content is preserved but the <p> structure is removed.
+    unnecessary paragraph wrapper tags. A line break is added after each
+    paragraph to preserve visual separation when the <p> tag is removed,
+    preventing the content from becoming an unformatted wall of text.
 
     Parameters
     ----------
@@ -248,12 +249,16 @@ def _remove_paragraph_tags(html_content: str) -> str:
     Returns
     -------
     str
-        HTML with <p> tags removed but content preserved
+        HTML with <p> tags removed but content preserved with line breaks
     """
     soup = BeautifulSoup(html_content, "html.parser")
 
-    # Find all <p> tags and unwrap them (remove tag but keep content)
+    # Find all <p> tags and add a line break before unwrapping
+    # This preserves visual separation between paragraphs (e.g., bullet points)
     for p in soup.find_all("p"):
+        # Append a line break to the paragraph content before unwrapping
+        br = soup.new_tag("br")
+        p.append(br)
         p.unwrap()
 
     return str(soup)
