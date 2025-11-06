@@ -44,7 +44,7 @@ from PIL import Image
 from tqdm import tqdm
 
 # Version of the script
-VERSION = "2.1.2"
+VERSION = "2.1.3"
 
 
 def _clean_page_headers(soup: BeautifulSoup, drug_name: str) -> BeautifulSoup:
