@@ -7,7 +7,7 @@ A Python script to convert the PDF of **Stahl's Essential Psychopharmacology: Pr
 In other words, it turns this:
 ![](./images/page.png)
 
-Into this:
+Into something like this:
 ![](./images/card.png)
 
 **Book Information:**
