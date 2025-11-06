@@ -36,10 +36,12 @@ This way everyone who owns the book can benefit from the flashcards, regardless 
 ## Features
 
 - **Automatic structure detection**: Identifies drug chapters and hierarchical sections
-- **Two card types**: 
-  - Basic Q&A cards (default)
-  - Cloze deletion cards (`--cloze` flag)
-- **Visual reference**: Includes source page images on each card
+- **Four card formats**: 
+  - Basic Q&A cards with separate question/answer fields (default)
+  - Single cloze deletion wrapping the entire answer (`--format singlecloze`)
+  - One cloze per paragraph, all using c1 (`--format onecloze`)
+  - Multi-cloze with sequential numbering per paragraph (`--format multicloze`)
+- **Visual reference**: Optionally includes source page images on each card
 - **Smart formatting**: 
   - Preserves important formatting (bold, italic, links)
   - Merges split paragraphs from PDF line wrapping
@@ -61,7 +63,7 @@ The script will automatically install all required dependencies on first run.
 If you prefer to install dependencies manually:
 
 ```bash
-pip install fire==0.7.1 pymupdf==1.26.4 beautifulsoup4==4.14.2 loguru==0.7.3 tqdm==4.67.1 genanki==0.13.1 Pillow==12.0.0
+pip install pymupdf==1.26.4 beautifulsoup4==4.14.2 loguru==0.7.3 tqdm==4.67.1 genanki==0.13.1 Pillow==12.0.0
 ```
 
 ## Usage
@@ -76,11 +78,30 @@ This creates a deck with separate fields for drug name, section, question, and a
 
 ### Cloze Deletion Cards
 
+The script supports three cloze deletion formats:
+
+**Single cloze (entire answer wrapped in c1):**
 ```bash
-uv run stahl_ankifier.py your_stahl_pdf.pdf --cloze
+uv run stahl_ankifier.py your_stahl_pdf.pdf --format singlecloze
 ```
 
-This creates cloze cards where the drug/section/question are shown with the answer wrapped in `{{c1::}}` cloze deletion syntax.
+**One cloze per paragraph (all using c1):**
+```bash
+uv run stahl_ankifier.py your_stahl_pdf.pdf --format onecloze
+```
+
+**Multi-cloze (sequential numbering per paragraph):**
+```bash
+uv run stahl_ankifier.py your_stahl_pdf.pdf --format multicloze
+```
+
+### Excluding Page Images
+
+By default, source page images are included in each card. To exclude them and reduce deck size:
+
+```bash
+uv run stahl_ankifier.py your_stahl_pdf.pdf --no-include-images
+```
 
 ### Output
 
