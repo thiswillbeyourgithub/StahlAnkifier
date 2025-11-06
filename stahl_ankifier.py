@@ -815,18 +815,24 @@ def parse_pdf(
             elif format == "onecloze":
                 # Wrap each <p> tag content in {{c1::}}
                 soup = BeautifulSoup(answer_html, "html.parser")
-                for p in soup.find_all("p"):
-                    p_content = str(p)[3:-4]  # Remove <p> and </p>
-                    p.string = "{{c1::" + p_content + "}}"
-                cloze_answer = str(soup)
+                if soup.find_all("p"):
+                    for p in soup.find_all("p"):
+                        p_content = str(p)[3:-4]  # Remove <p> and </p>
+                        p.string = "{{c1::" + p_content + "}}"
+                    cloze_answer = str(soup)
+                else:
+                    cloze_answer = "{{c1::" + str(soup) + "}}"
             elif format == "multicloze":
                 # Wrap each <p> tag content in sequential cloze numbers
                 soup = BeautifulSoup(answer_html, "html.parser")
                 paragraphs = soup.find_all("p")
-                for idx, p in enumerate(paragraphs, start=1):
-                    p_content = str(p)[3:-4]  # Remove <p> and </p>
-                    p.string = "{{c" + idx + "::" + p_content + "}}"
-                cloze_answer = str(soup)
+                if paragraphs:
+                    for idx, p in enumerate(paragraphs, start=1):
+                        p_content = str(p)[3:-4]  # Remove <p> and </p>
+                        p.string = "{{c" + idx + "::" + p_content + "}}"
+                    cloze_answer = str(soup)
+                else:
+                    cloze_answer = "{{c1::" + str(soup) + "}}"
             else:
                 raise ValueError(format)
 
