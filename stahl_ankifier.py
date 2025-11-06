@@ -24,7 +24,7 @@ import random
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Literal
 
 import fire
 import fitz  # PyMuPDF
@@ -390,7 +390,11 @@ def parse_drug_pages(
     return drug_dict
 
 
-def parse_pdf(pdf_path: str, format: str = "basic", source: str = "images") -> None:
+def parse_pdf(
+    pdf_path: str,
+    format: Literal["basic", "singlecloze", "onecloze", "multicloze"] = "basic",
+    source: str = "images",
+) -> None:
     """
     Parse a PDF file and extract metadata, table of contents, and content.
 
@@ -398,7 +402,7 @@ def parse_pdf(pdf_path: str, format: str = "basic", source: str = "images") -> N
     ----------
     pdf_path : str
         Path to the PDF file to parse.
-    format : str, optional
+    format : Literal["basic", "singlecloze", "onecloze", "multicloze"], optional
         Card format to use:
         - "basic": Basic Q&A cards with separate question and answer fields (default)
         - "singlecloze": Single cloze deletion wrapping the entire answer in {{c1::}}
