@@ -636,7 +636,9 @@ def parse_pdf(
     for drug_name, h1_dict in tqdm(drug_content.items(), desc="Creating cards"):
         # Get page range for this drug to display at top of source field
         page_range = drug_page_ranges.get(drug_name, (0, 0))
-        page_range_text = f"<div style='font-weight: bold; margin-bottom: 10px;'>Pages: {page_range[0]}-{page_range[1]}</div>"
+        page_range_text = (
+            f"<div class='page-range'>Pages: {page_range[0]}-{page_range[1]}</div>"
+        )
 
         # Write images for this drug to temp directory and create img tags
         # All cards for a drug will reference the same set of page images
@@ -726,19 +728,19 @@ def parse_pdf(
                 {
                     "name": "Cloze",
                     "qfmt": textwrap.dedent("""
-                        <div style="font-size: 20px; margin-bottom: 10px;"><b>{{Drug}}</b></div>
-                        <div style="font-size: 16px; margin-bottom: 15px;">{{Section}}</div>
-                        <div style="font-size: 14px;">{{cloze:Text}}</div>
+                        <div class="drug"><b>{{Drug}}</b></div>
+                        <div class="section">{{Section}}</div>
+                        <div class="cloze-text">{{cloze:Text}}</div>
                     """),
                     "afmt": textwrap.dedent("""
-                        <div style="font-size: 20px; margin-bottom: 10px;"><b>{{Drug}}</b></div>
-                        <div style="font-size: 16px; margin-bottom: 15px;">{{Section}}</div>
-                        <div style="font-size: 14px;">{{cloze:Text}}</div>
+                        <div class="drug"><b>{{Drug}}</b></div>
+                        <div class="section">{{Section}}</div>
+                        <div class="cloze-text">{{cloze:Text}}</div>
                         <hr>
-                        <div style="margin-top: 15px;">
+                        <div class="source-container">
                             <details open>
-                                <summary style="cursor: pointer; ">Source Pages</summary>
-                                <div style="margin-top: 10px; text-align: center;">{{Source}}</div>
+                                <summary class="source-summary">Source Pages</summary>
+                                <div class="source-images">{{Source}}</div>
                             </details>
                         </div>
                     """),
@@ -762,6 +764,31 @@ def parse_pdf(
                     font-weight: bold;
                     color: blue;
                 }
+                .drug {
+                    font-size: 20px;
+                    margin-bottom: 10px;
+                }
+                .section {
+                    font-size: 16px;
+                    margin-bottom: 15px;
+                }
+                .cloze-text {
+                    font-size: 14px;
+                }
+                .source-container {
+                    margin-top: 15px;
+                }
+                .source-summary {
+                    cursor: pointer;
+                }
+                .source-images {
+                    margin-top: 10px;
+                    text-align: center;
+                }
+                .page-range {
+                    font-weight: bold;
+                    margin-bottom: 10px;
+                }
             """),
             model_type=genanki.Model.CLOZE,
         )
@@ -782,19 +809,19 @@ def parse_pdf(
                 {
                     "name": "Card 1",
                     "qfmt": textwrap.dedent("""
-                        <div style="font-size: 20px; margin-bottom: 10px;"><b>{{Drug}}</b></div>
-                        <div style="font-size: 16px; margin-bottom: 15px;">{{Section}}</div>
-                        <div style="font-size: 18px;">{{Question}}</div>
+                        <div class="drug"><b>{{Drug}}</b></div>
+                        <div class="section">{{Section}}</div>
+                        <div class="question">{{Question}}</div>
                     """),
                     "afmt": textwrap.dedent("""
                         {{FrontSide}}
                         <hr id="answer">
-                        <div style="margin-top: 15px;">{{Answer}}</div>
+                        <div class="answer">{{Answer}}</div>
                         <hr>
-                        <div style="margin-top: 15px;">
+                        <div class="source-container">
                             <details open>
-                                <summary style="cursor: pointer; ">Source Pages</summary>
-                                <div style="margin-top: 10px; text-align: center;">{{PageImages}}</div>
+                                <summary class="source-summary">Source Pages</summary>
+                                <div class="source-images">{{PageImages}}</div>
                             </details>
                         </div>
                     """),
@@ -813,6 +840,34 @@ def parse_pdf(
                     height: auto;
                     margin: 10px 0;
                     border: 1px solid #ccc;
+                }
+                .drug {
+                    font-size: 20px;
+                    margin-bottom: 10px;
+                }
+                .section {
+                    font-size: 16px;
+                    margin-bottom: 15px;
+                }
+                .question {
+                    font-size: 18px;
+                }
+                .answer {
+                    margin-top: 15px;
+                }
+                .source-container {
+                    margin-top: 15px;
+                }
+                .source-summary {
+                    cursor: pointer;
+                }
+                .source-images {
+                    margin-top: 10px;
+                    text-align: center;
+                }
+                .page-range {
+                    font-weight: bold;
+                    margin-bottom: 10px;
                 }
             """),
         )
@@ -959,8 +1014,8 @@ def parse_pdf(
             # Format: Question followed by cloze-wrapped answer
             # Drug and Section are now separate fields
             text_content = (
-                f"<div style='font-size: 18px; margin-bottom: 15px;'>{card['Question']}</div>"
-                f"<div style='margin-top: 15px;'>{cloze_answer}</div>"
+                f"<div class='question' style='margin-bottom: 15px;'>{card['Question']}</div>"
+                f"<div class='answer'>{cloze_answer}</div>"
             )
 
             note = genanki.Note(
