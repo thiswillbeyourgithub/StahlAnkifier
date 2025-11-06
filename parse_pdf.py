@@ -34,6 +34,9 @@ from loguru import logger
 from PIL import Image
 from tqdm import tqdm
 
+# Version of the script
+VERSION = "1.0.0"
+
 
 def _clean_page_headers(soup: BeautifulSoup, drug_name: str) -> BeautifulSoup:
     """
@@ -779,7 +782,7 @@ def parse_pdf(pdf_path: str, cloze: bool = False) -> None:
     logger.info("Writing Anki package to file...")
     anki_package = genanki.Package(anki_deck)
     anki_package.media_files = media_files
-    output_file = "stahl_drugs.apkg"
+    output_file = f"stahl_drugs_v{VERSION}.apkg"
     anki_package.write_to_file(output_file)
     logger.info(f"Anki deck written to {output_file}")
 
