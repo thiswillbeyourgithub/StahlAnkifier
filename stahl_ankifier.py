@@ -905,6 +905,9 @@ def parse_pdf(
             cloze_answer = cloze_answer.replace("•", "")
 
             cloze_answer = re.sub(r"{{c\d*::\s*}}", "", cloze_answer).strip()
+            
+            # Remove trailing <br> and <br/> tags
+            cloze_answer = re.sub(r"(<br\s*/?>)+$", "", cloze_answer)
 
             assert "{{c" in cloze_answer, (
                 f"Answer is missing start of cloze: {cloze_answer}\n{original}"
