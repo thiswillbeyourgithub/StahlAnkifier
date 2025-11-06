@@ -28,6 +28,7 @@ Created with assistance from aider.chat (https://github.com/Aider-AI/aider/)
 
 import argparse
 import io
+import re
 import random
 import shutil
 import tempfile
@@ -860,6 +861,8 @@ def parse_pdf(
                     cloze_answer = "{{c1::" + str(soup) + "}}"
             else:
                 raise ValueError(format)
+
+            cloze_answer = re.sub(r"{{c\d*::\s*}}", "", cloze_answer).strip()
 
             assert "{{c" in cloze_answer, f"Answer is missing start of cloze: {cloze_answer}"
             assert "}}" in cloze_answer, f"Answer is missing end of cloze: {cloze_answer}"
