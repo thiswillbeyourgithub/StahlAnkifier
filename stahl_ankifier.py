@@ -836,6 +836,8 @@ def parse_pdf(
                 else:
                     cloze_answer = "{{c1::" + str(soup) + "}}"
 
+                cloze_answer = cloze_answer.replace("• ", "")
+
             elif format == "multicloze":
                 # Wrap each <p> tag content in sequential cloze numbers
                 soup = BeautifulSoup(answer_html, "html.parser")
@@ -859,6 +861,7 @@ def parse_pdf(
                     cloze_answer += "}}"
                 else:
                     cloze_answer = "{{c1::" + str(soup) + "}}"
+                cloze_answer = cloze_answer.replace("• ", "")
             else:
                 raise ValueError(format)
 
