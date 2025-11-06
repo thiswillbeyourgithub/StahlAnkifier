@@ -261,7 +261,7 @@ def _remove_paragraph_tags(html_content: str) -> str:
         p.append(br)
         p.unwrap()
 
-    return str(soup)
+    return str(soup).strip()
 
 
 def _clean_html_keep_formatting(html_content: str) -> str:
