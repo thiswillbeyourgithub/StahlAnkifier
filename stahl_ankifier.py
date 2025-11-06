@@ -79,7 +79,7 @@ def _clean_page_headers(soup: BeautifulSoup, drug_name: str) -> BeautifulSoup:
     paragraphs = soup_copy.find_all("p")
 
     # Check first 0-3 paragraphs and remove if they match header patterns
-    for i, p in enumerate(paragraphs):
+    for i in range(min(3, len(paragraphs))):
         p = paragraphs[i]
         text = p.get_text(strip=True)
 
@@ -91,8 +91,7 @@ def _clean_page_headers(soup: BeautifulSoup, drug_name: str) -> BeautifulSoup:
         if (
             text.isdigit()
             or text.lower() == "(continued)"
-            or (text == drug_name and i <= 5)
-            or (text == drug_name.upper())
+            or text == drug_name
             or text == "Published online by Cambridge University Press"
         ):
             p.decompose()  # Remove this paragraph
