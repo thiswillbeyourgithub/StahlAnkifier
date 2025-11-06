@@ -875,8 +875,12 @@ def parse_pdf(
 
             cloze_answer = re.sub(r"{{c\d*::\s*}}", "", cloze_answer).strip()
 
-            assert "{{c" in cloze_answer, f"Answer is missing start of cloze: {cloze_answer}\n{original}"
-            assert "}}" in cloze_answer, f"Answer is missing end of cloze: {cloze_answer}\n{original}"
+            assert "{{c" in cloze_answer, (
+                f"Answer is missing start of cloze: {cloze_answer}\n{original}"
+            )
+            assert "}}" in cloze_answer, (
+                f"Answer is missing end of cloze: {cloze_answer}\n{original}"
+            )
 
             # Format: Question followed by cloze-wrapped answer
             # Drug and Section are now separate fields
