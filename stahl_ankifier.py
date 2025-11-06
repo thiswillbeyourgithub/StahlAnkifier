@@ -705,7 +705,7 @@ def parse_pdf(
     logger.info("Creating Anki deck with genanki...")
 
     if format != "basic":
-        # Cloze model: separate fields for drug, section, question+answer, and source images
+        # Cloze model: Text field must be first as it contains the cloze deletions
         # Model ID varies by format to allow different deck types
         model_ids = {
             "singlecloze": 1607392320,
@@ -716,9 +716,9 @@ def parse_pdf(
             model_id=model_ids[format],
             name=f"Stahl Drug {format.title()}",
             fields=[
+                {"name": "Text"},
                 {"name": "Drug"},
                 {"name": "Section"},
-                {"name": "Text"},
                 {"name": "Source"},
                 {"name": "Tags"},
             ],
@@ -966,9 +966,9 @@ def parse_pdf(
             note = genanki.Note(
                 model=anki_model,
                 fields=[
+                    text_content,
                     card["Drug"],
                     card["Section"],
-                    text_content,
                     card["PageImages"],
                     ", ".join(card["Tags"]),
                 ],
