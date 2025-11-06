@@ -827,6 +827,8 @@ def parse_pdf(
                     p_content = str(p)[3:-4]  # Remove <p> and </p>
                     p.string = f"{{{{c{idx}::{p_content}}}}}"
                 cloze_answer = str(soup)
+            else:
+                raise ValueError(format)
 
             # Format: Drug name in bold, section, question, then cloze-wrapped answer
             text_content = (
