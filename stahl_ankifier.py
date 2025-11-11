@@ -722,6 +722,7 @@ def parse_pdf(
                 {"name": "Drug"},
                 {"name": "Section"},
                 {"name": "Source"},
+                {"name": "Notes"},
                 {"name": "Tags"},
             ],
             templates=[
@@ -737,6 +738,12 @@ def parse_pdf(
                         <div class="section">{{Section}}</div>
                         <div class="cloze-text">{{cloze:Text}}</div>
                         <hr>
+                        <div class="notes-container">
+                            <details>
+                                <summary class="notes-summary">My Notes</summary>
+                                <div class="notes-content">{{Notes}}</div>
+                            </details>
+                        </div>
                         <div class="source-container">
                             <details open>
                                 <summary class="source-summary">Source Pages</summary>
@@ -778,6 +785,19 @@ def parse_pdf(
                 .source-container {
                     margin-top: 15px;
                 }
+                .notes-container {
+                    margin-top: 15px;
+                }
+                .notes-summary {
+                    cursor: pointer;
+                    font-weight: bold;
+                }
+                .notes-content {
+                    margin-top: 10px;
+                    padding: 10px;
+                    background-color: #f9f9f9;
+                    border-left: 3px solid #4CAF50;
+                }
                 .source-summary {
                     cursor: pointer;
                 }
@@ -802,6 +822,7 @@ def parse_pdf(
                 {"name": "Section"},
                 {"name": "Question"},
                 {"name": "Answer"},
+                {"name": "Notes"},
                 {"name": "Tags"},
                 {"name": "PageImages"},
             ],
@@ -818,6 +839,12 @@ def parse_pdf(
                         <hr id="answer">
                         <div class="answer">{{Answer}}</div>
                         <hr>
+                        <div class="notes-container">
+                            <details>
+                                <summary class="notes-summary">My Notes</summary>
+                                <div class="notes-content">{{Notes}}</div>
+                            </details>
+                        </div>
                         <div class="source-container">
                             <details open>
                                 <summary class="source-summary">Source Pages</summary>
@@ -855,6 +882,19 @@ def parse_pdf(
                 .answer {
                     margin-top: 15px;
                 }
+                .notes-container {
+                    margin-top: 15px;
+                }
+                .notes-summary {
+                    cursor: pointer;
+                    font-weight: bold;
+                }
+                .notes-content {
+                    margin-top: 10px;
+                    padding: 10px;
+                    background-color: #f9f9f9;
+                    border-left: 3px solid #4CAF50;
+                }
                 .source-container {
                     margin-top: 15px;
                 }
@@ -890,6 +930,7 @@ def parse_pdf(
                     card["Section"],
                     card["Question"],
                     card["Answer"],
+                    "",  # Notes field - empty by default for user to fill in
                     ", ".join(card["Tags"]),
                     card["PageImages"],
                 ],
@@ -1025,6 +1066,7 @@ def parse_pdf(
                     card["Drug"],
                     card["Section"],
                     card["PageImages"],
+                    "",  # Notes field - empty by default for user to fill in
                     ", ".join(card["Tags"]),
                 ],
                 tags=card["Tags"],
