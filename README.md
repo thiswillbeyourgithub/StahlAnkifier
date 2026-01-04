@@ -155,7 +155,7 @@ If you encounter any issues or have questions:
 
 ## License
 
-This project is licensed under the GNU General Public License v3.
+This project is licensed under the AGPLv3.
 
 See the [LICENSE](LICENSE) file for full license text.
 
