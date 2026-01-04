@@ -27,6 +27,7 @@ Created with assistance from aider.chat (https://github.com/Aider-AI/aider/)
 """
 
 import argparse
+import html
 import io
 import re
 import random
@@ -479,13 +480,15 @@ def parse_pdf(
     ]
     logger.info(f"Found {len(table_of_contents)} TOC entries")
 
-    # Extract HTML content and images from each page
+    # Extract HTML content, plain text, and images from each page
     # HTML uses get_textpage().extractHTML() to preserve formatting and structure
+    # Plain text is extracted to include in img title attributes for searchability
     # Images are rendered as PNG using get_pixmap() for visual reference in Anki cards
     # Store as dict with page number as key for easy access
-    logger.info(f"Extracting HTML content and images from {len(doc)} pages...")
+    logger.info(f"Extracting HTML content, text, and images from {len(doc)} pages...")
     page_contents = {}
     page_images: Dict[int, bytes] = {}
+    page_texts: Dict[int, str] = {}
     for page_num in tqdm(range(len(doc)), desc="Extracting pages"):
         page = doc[page_num]
         # Extract HTML from page - this preserves formatting and structure
@@ -494,6 +497,11 @@ def parse_pdf(
         # Parse HTML with BeautifulSoup for easier manipulation
         soup = BeautifulSoup(html_content, "html.parser")
         page_contents[page_num + 1] = soup  # Use 1-based indexing for readability
+
+        # Extract plain text for search functionality in Anki browser
+        # This text will be embedded in img title attributes
+        text_content = textpage.extractText()
+        page_texts[page_num + 1] = text_content
 
         # Render page as JPEG image for visual reference
         # DPI=75 for compact file size, grayscale to reduce size further
@@ -568,11 +576,15 @@ def parse_pdf(
 
     logger.info(f"Found {len(drug_page)} drugs to process")
 
-    # Build drug_images dict mapping drug names to their page images
+    # Build drug_images and drug_texts dicts mapping drug names to their page data
     # Also track page ranges for each drug to display in source field
     # This allows including source pages as images in Anki cards for visual reference
-    logger.info("Collecting page images and page ranges for each drug...")
+    # Text content is included in img title attributes for searchability in Anki
+    logger.info(
+        "Collecting page images, text content, and page ranges for each drug..."
+    )
     drug_images: Dict[str, List[bytes]] = {}
+    drug_texts: Dict[str, List[str]] = {}
     drug_page_ranges: Dict[str, tuple[int, int]] = {}
     for idx, item in enumerate(table_of_contents):
         title_text = item["title"]
@@ -593,16 +605,22 @@ def parse_pdf(
                     else:
                         end_page = pdf_data["total_pages"]
 
-                    # Collect images for all pages in this drug's range
+                    # Collect images and text content for all pages in this drug's range
                     images_for_drug = []
+                    texts_for_drug = []
                     for page_num in range(start_page, end_page + 1):
                         if page_num in page_images:
                             images_for_drug.append(page_images[page_num])
+                        if page_num in page_texts:
+                            texts_for_drug.append(page_texts[page_num])
 
                     drug_images[drug_name] = images_for_drug
+                    drug_texts[drug_name] = texts_for_drug
                     drug_page_ranges[drug_name] = (start_page, end_page)
 
-    logger.info(f"Collected images and page ranges for {len(drug_images)} drugs")
+    logger.info(
+        f"Collected images, text content, and page ranges for {len(drug_images)} drugs"
+    )
 
     # Parse each drug's pages into hierarchical structure
     # The structure is: drug_name -> H1 header -> H2 header -> HTML content list
@@ -642,17 +660,26 @@ def parse_pdf(
 
         # Write images for this drug to temp directory and create img tags
         # All cards for a drug will reference the same set of page images
+        # Text content is added to title attribute for searchability in Anki browser
         # Only include images if include_images is True
         page_images_html = page_range_text  # Always include page range
         if include_images:
             drug_name_for_file = drug_name.lower().replace(" ", "_")
             img_tags = []
+            texts_list = drug_texts.get(drug_name, [])
             for page_idx, img_bytes in enumerate(drug_images.get(drug_name, [])):
                 filename = f"{drug_name_for_file}_page_{page_idx}.jpg"
                 filepath = Path(temp_dir) / filename
                 filepath.write_bytes(img_bytes)
                 media_files.append(str(filepath))
-                img_tags.append(f'<img src="{filename}">')
+
+                # Get the text content for this page if available
+                # Use html.escape to safely include text in title attribute
+                page_text = ""
+                if page_idx < len(texts_list):
+                    page_text = html.escape(texts_list[page_idx], quote=True)
+
+                img_tags.append(f'<img src="{filename}" title="{page_text}">')
 
             # Combine page range with img tags, separated by line breaks
             page_images_html = page_range_text + "<br>" + "<br>".join(img_tags)
