@@ -52,7 +52,7 @@ This way everyone who owns the book can benefit from the flashcards, regardless 
   - Single cloze deletion wrapping the entire answer (`--format singlecloze`)
   - One cloze per line, all using c1 (`--format onecloze`)
   - Multi-cloze with sequential numbering per line (`--format multicloze`)
-- **Visual reference**: Optionally includes source page images on each card
+- **Visual reference**: Optionally includes source page images on each card. The full text of each page is embedded in the image's title attribute, making all content searchable directly in Anki's browser
 - **Smart formatting**: 
   - Preserves important formatting (bold, italic, links)
   - Merges split paragraphs from PDF line wrapping

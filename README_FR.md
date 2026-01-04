@@ -52,7 +52,7 @@ De cette façon, toute personne possédant le livre peut bénéficier des cartes
   - Suppression à trous simple enveloppant la réponse entière (`--format singlecloze`)
   - Une suppression à trous par ligne, toutes utilisant c1 (`--format onecloze`)
   - Multi-suppressions à trous avec numérotation séquentielle par ligne (`--format multicloze`)
-- **Référence visuelle** : Inclut optionnellement les images des pages sources sur chaque carte
+- **Référence visuelle** : Inclut optionnellement les images des pages sources sur chaque carte. Le texte intégral de chaque page est intégré dans l'attribut title de l'image, rendant tout le contenu directement consultable dans le navigateur d'Anki
 - **Formatage intelligent** :
   - Préserve le formatage important (gras, italique, liens)
   - Fusionne les paragraphes divisés par le retour à la ligne du PDF
