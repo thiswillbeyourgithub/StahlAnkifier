@@ -29,6 +29,7 @@ Created with assistance from aider.chat (https://github.com/Aider-AI/aider/)
 import argparse
 import html
 import io
+import json
 import re
 import random
 import shutil
@@ -413,6 +414,7 @@ def parse_pdf(
     format: Literal["basic", "singlecloze", "onecloze", "multicloze"] = "basic",
     include_images: bool = True,
     debug: bool = False,
+    dump_json: str | None = None,
 ) -> None:
     """
     Parse Stahl's Prescriber's Guide PDF and convert to Anki flashcards.
@@ -434,6 +436,9 @@ def parse_pdf(
         Whether to include page images in the source field (default: True).
     debug : bool, optional
         Whether to enter debugger at the end for inspection (default: False).
+    dump_json : str | None, optional
+        If set, write the list of extracted cards to this JSON file path before
+        building the Anki package (default: None, meaning no JSON is written).
 
     Notes
     -----
@@ -727,6 +732,17 @@ def parse_pdf(
                 cards.append(card)
 
     logger.info(f"Created {len(cards)} Anki cards with {len(media_files)} media files")
+
+    # Optionally dump the extracted card data to a local JSON file
+    # Cards are plain dicts of strings/lists, so they serialize cleanly to JSON.
+    # This is useful for inspecting/debugging the parsed content without Anki.
+    if dump_json:
+        dump_path = Path(dump_json)
+        logger.info(f"Dumping {len(cards)} cards to JSON file: {dump_path}")
+        dump_path.write_text(
+            json.dumps(cards, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        logger.info(f"Card data written to {dump_path.absolute()}")
 
     # Create genanki model (card template)
     # This defines the structure and layout of the cards
@@ -1237,6 +1253,18 @@ def main() -> None:
         help="Enter debugger at the end for inspection (default: False).",
     )
 
+    # Add dump-json option to write extracted cards to a local JSON file
+    parser.add_argument(
+        "--dump-json",
+        dest="dump_json",
+        type=str,
+        default=None,
+        help=(
+            "If set, dump the extracted cards to this JSON file path "
+            "before building the Anki package (default: None)."
+        ),
+    )
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -1246,6 +1274,7 @@ def main() -> None:
         format=args.format,
         include_images=args.include_images,
         debug=args.debug,
+        dump_json=args.dump_json,
     )
 
 
