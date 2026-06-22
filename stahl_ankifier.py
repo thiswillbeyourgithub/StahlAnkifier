@@ -80,6 +80,13 @@ def _clean_page_headers(soup: BeautifulSoup, drug_name: str) -> BeautifulSoup:
     # Find all paragraphs
     paragraphs = soup_copy.find_all("p")
 
+    # The TOC-derived drug_name uses underscores (e.g. "AMPHETAMINE_D") while the
+    # page renders the same title with spaces and parentheses (e.g.
+    # "AMPHETAMINE (D)"). Normalize both to alphanumerics only so the page-title
+    # header is recognized and removed for these suffixed drug names too; without
+    # this the surviving title is neither an H1 nor H2 and crashes the parser.
+    drug_name_norm = re.sub(r"[^a-z0-9]", "", drug_name.lower())
+
     # Check first 0-3 paragraphs and remove if they match header patterns
     for i in range(min(3, len(paragraphs))):
         p = paragraphs[i]
@@ -88,12 +95,12 @@ def _clean_page_headers(soup: BeautifulSoup, drug_name: str) -> BeautifulSoup:
         # Check if this is a header we should remove:
         # 1. Just a number (page counter)
         # 2. "(continued)" indicator
-        # 3. Drug name in uppercase
+        # 3. Drug name (matched on alphanumerics only, see drug_name_norm above)
         # 4. Cambridge University Press notice
         if (
             text.isdigit()
             or text.lower() == "(continued)"
-            or text == drug_name
+            or re.sub(r"[^a-z0-9]", "", text.lower()) == drug_name_norm
             or text == "Published online by Cambridge University Press"
         ):
             p.decompose()  # Remove this paragraph
