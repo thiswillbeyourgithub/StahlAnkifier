@@ -591,9 +591,14 @@ def parse_pdf(
                     # Start page is from the current TOC item
                     start_page = item["page"]
 
-                    # End page is the page before the next TOC item, or total pages if this is the last item
+                    # End page is the page before the next TOC item, or total pages if
+                    # this is the last item. Clamp to start_page: if the next TOC item
+                    # shares this item's page (next page <= start page), "next - 1"
+                    # would be < start_page, producing an empty/inverted range that
+                    # drops the drug's content entirely. The clamp guarantees at least
+                    # the start page is always collected.
                     if idx + 1 < len(table_of_contents):
-                        end_page = table_of_contents[idx + 1]["page"] - 1
+                        end_page = max(start_page, table_of_contents[idx + 1]["page"] - 1)
                     else:
                         end_page = pdf_data["total_pages"]
 
@@ -631,9 +636,12 @@ def parse_pdf(
 
                 if drug_name and drug_name.replace("_", "").isupper():
                     # Get page range for this drug
+                    # Clamp end to start_page for the same reason as the content loop
+                    # above: a next TOC item sharing this page must not yield an
+                    # empty/inverted range that would drop this drug's images and text.
                     start_page = item["page"]
                     if idx + 1 < len(table_of_contents):
-                        end_page = table_of_contents[idx + 1]["page"] - 1
+                        end_page = max(start_page, table_of_contents[idx + 1]["page"] - 1)
                     else:
                         end_page = pdf_data["total_pages"]
 
