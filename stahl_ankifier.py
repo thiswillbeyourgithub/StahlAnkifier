@@ -609,7 +609,10 @@ def parse_pdf(
                         if page_num in page_contents:
                             pages_content.append(page_contents[page_num])
 
-                    drug_page[drug_name] = pages_content
+                    # Accumulate rather than overwrite: if the same drug name appears
+                    # in more than one TOC entry (e.g. a multi-part monograph), each
+                    # entry's pages must be appended or earlier pages would be lost.
+                    drug_page.setdefault(drug_name, []).extend(pages_content)
 
     logger.info(f"Found {len(drug_page)} drugs to process")
 
@@ -654,9 +657,20 @@ def parse_pdf(
                         if page_num in page_texts:
                             texts_for_drug.append(page_texts[page_num])
 
-                    drug_images[drug_name] = images_for_drug
-                    drug_texts[drug_name] = texts_for_drug
-                    drug_page_ranges[drug_name] = (start_page, end_page)
+                    # Accumulate rather than overwrite for drug names spanning multiple
+                    # TOC entries (see the content loop above). Images and text extend;
+                    # the page range expands to span the min start and max end so the
+                    # displayed range covers every entry for the drug.
+                    drug_images.setdefault(drug_name, []).extend(images_for_drug)
+                    drug_texts.setdefault(drug_name, []).extend(texts_for_drug)
+                    if drug_name in drug_page_ranges:
+                        prev_start, prev_end = drug_page_ranges[drug_name]
+                        drug_page_ranges[drug_name] = (
+                            min(prev_start, start_page),
+                            max(prev_end, end_page),
+                        )
+                    else:
+                        drug_page_ranges[drug_name] = (start_page, end_page)
 
     logger.info(
         f"Collected images, text content, and page ranges for {len(drug_images)} drugs"
