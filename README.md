@@ -52,6 +52,7 @@ This way everyone who owns the book can benefit from the flashcards, regardless 
   - Single cloze deletion wrapping the entire answer (`--format singlecloze`)
   - One cloze per line, all using c1 (`--format onecloze`)
   - Multi-cloze with sequential numbering per line (`--format multicloze`)
+  - Or build them all (plus a JSON dump) from a single parse with `--format all`
 - **Visual reference**: Optionally includes source page images on each card. The full text of each page is embedded in the image's title attribute, making all content searchable directly in Anki's browser
 - **Smart formatting**: 
   - Preserves important formatting (bold, italic, links)
@@ -105,6 +106,28 @@ uv run stahl_ankifier.py your_stahl_pdf.pdf --format onecloze
 ```bash
 uv run stahl_ankifier.py your_stahl_pdf.pdf --format multicloze
 ```
+
+### Generate Everything at Once
+
+The PDF is parsed only once, so you can emit every deck (plus a JSON dump of the
+extracted cards) from a single run instead of re-parsing per format:
+
+```bash
+uv run stahl_ankifier.py your_stahl_pdf.pdf --format all
+```
+
+This writes `stahl_drugs_v<VERSION>.apkg` (basic) plus
+`stahl_drugs_v<VERSION>_singlecloze.apkg`, `_onecloze.apkg`, `_multicloze.apkg`,
+and `cards_dump.json`. The helper script `recreate_apkg.sh` is a thin wrapper
+around this command.
+
+To only dump the extracted cards as JSON (no `.apkg` built):
+
+```bash
+uv run stahl_ankifier.py your_stahl_pdf.pdf --format json
+```
+
+(Use `--dump-json <path>` with any format to also write the JSON to a custom path.)
 
 ### Excluding Page Images
 

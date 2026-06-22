@@ -13,6 +13,8 @@ Written with assistance from Claude Code.
 """
 
 import sys
+import tempfile
+import zipfile
 from pathlib import Path
 
 from bs4 import BeautifulSoup
@@ -21,8 +23,11 @@ from bs4 import BeautifulSoup
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from stahl_ankifier import (  # noqa: E402
+    VERSION,
     _clean_page_headers,
+    _output_filename,
     _reorder_reading_order,
+    _write_deck,
     parse_drug_pages,
 )
 
@@ -111,6 +116,40 @@ def test_normal_two_column_order_is_preserved():
     )
     ordered = _reorder_reading_order(BeautifulSoup(html, "html.parser"))
     assert _texts(ordered) == ["THERAPEUTICS", "Brands", "Best Augmenting"], _texts(ordered)
+
+
+def test_output_filename_per_format():
+    """basic keeps the bare name; cloze formats get a per-format suffix."""
+    assert _output_filename("basic") == f"stahl_drugs_v{VERSION}.apkg"
+    assert _output_filename("singlecloze") == f"stahl_drugs_v{VERSION}_singlecloze.apkg"
+    assert _output_filename("onecloze") == f"stahl_drugs_v{VERSION}_onecloze.apkg"
+    assert _output_filename("multicloze") == f"stahl_drugs_v{VERSION}_multicloze.apkg"
+
+
+def test_write_deck_builds_valid_apkg_for_each_format():
+    """_write_deck must produce a valid .apkg (a zip) for every card format,
+    so a single parse can emit all formats."""
+    cards = [
+        {
+            "Drug": "Aspirin",
+            "Section": "Therapeutics",
+            "Question": "Brands?",
+            "Answer": "<p>First point</p><p>Second point</p>",
+            "Tags": ["Stahl::aspirin::therapeutics"],
+            "PageImages": "<div class='page-range'>Pages: 1-2</div>",
+        }
+    ]
+    tmp = Path(tempfile.mkdtemp())
+    try:
+        for fmt in ("basic", "singlecloze", "onecloze", "multicloze"):
+            out = tmp / f"deck_{fmt}.apkg"
+            _write_deck(cards, [], fmt, str(out))
+            assert out.exists(), f"{fmt}: no file written"
+            assert zipfile.is_zipfile(out), f"{fmt}: not a valid apkg/zip"
+    finally:
+        for f in tmp.glob("*"):
+            f.unlink()
+        tmp.rmdir()
 
 
 if __name__ == "__main__":
