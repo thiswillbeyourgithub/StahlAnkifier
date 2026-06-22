@@ -1077,7 +1077,9 @@ def parse_pdf(
                 if paragraphs:
                     for idx, p in enumerate(paragraphs, start=1):
                         p_content = str(p)[3:-4]  # Remove <p> and </p>
-                        p.string = "{{c" + idx + "::" + p_content + "}}"
+                        # str(idx): idx is an int from enumerate, so it must be
+                        # stringified before concatenation or this raises TypeError.
+                        p.string = "{{c" + str(idx) + "::" + p_content + "}}"
                     cloze_answer = str(soup)
                 elif "<br/>" in str(soup):
                     cloze_answer = "{{c1::"
