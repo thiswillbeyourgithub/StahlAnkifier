@@ -111,6 +111,81 @@ def _clean_page_headers(soup: BeautifulSoup, drug_name: str) -> BeautifulSoup:
     return soup_copy
 
 
+# Fraction of the page width used as the boundary between the left and right
+# text columns. The Prescriber's Guide is a fixed two-column layout: left-column
+# text starts at roughly left<=90pt and right-column text at left>=195pt (page
+# width is 391.2pt), so any boundary inside that gutter classifies every line
+# correctly. 0.38 (~149pt) sits comfortably in the gap with margin on both sides.
+_COLUMN_BOUNDARY_FRACTION = 0.38
+
+_TOP_RE = re.compile(r"top:([\d.]+)pt")
+_LEFT_RE = re.compile(r"left:([\d.]+)pt")
+_WIDTH_RE = re.compile(r"width:([\d.]+)pt")
+
+
+def _style_pt(regex: re.Pattern, style: str, default: float) -> float:
+    """Extract a point value (e.g. top/left/width) from an inline style string."""
+    match = regex.search(style or "")
+    return float(match.group(1)) if match else default
+
+
+def _reorder_reading_order(soup: BeautifulSoup) -> BeautifulSoup:
+    """
+    Reorder a page's paragraphs into human reading order.
+
+    PyMuPDF's extractHTML() emits paragraphs in an order that does not always
+    match reading order: for many pages it yields the right column before the
+    left, or places a section banner after the content it heads. The downstream
+    parser (parse_drug_pages) assumes linear reading order, so this scrambling
+    makes content appear before the H1/H2 header that governs it.
+
+    The Prescriber's Guide is a two-column layout where reading order is: the
+    entire left column top-to-bottom, then the entire right column top-to-bottom.
+    This restores that order by bucketing each <p> into a column by its left
+    coordinate (relative to _COLUMN_BOUNDARY_FRACTION of the page width) and then
+    sorting by (column, top), with the original index as a stable tie-breaker.
+
+    Reordering is geometric only; it never adds or drops paragraphs.
+
+    Parameters
+    ----------
+    soup : BeautifulSoup
+        Page content (a <div> wrapping <p> elements) to reorder.
+
+    Returns
+    -------
+    BeautifulSoup
+        The same soup with its paragraphs reordered in place.
+    """
+    div = soup.find("div")
+    container = div if div else soup
+    paragraphs = container.find_all("p")
+    if not paragraphs:
+        return soup
+
+    width = _style_pt(_WIDTH_RE, div.get("style", "") if div else "", 391.2)
+    boundary = width * _COLUMN_BOUNDARY_FRACTION
+
+    decorated = []
+    for index, p in enumerate(paragraphs):
+        style = p.get("style", "")
+        left = _style_pt(_LEFT_RE, style, 0.0)
+        top = _style_pt(_TOP_RE, style, 0.0)
+        column = 0 if left < boundary else 1
+        decorated.append((column, top, index, p))
+
+    decorated.sort(key=lambda item: (item[0], item[1], item[2]))
+
+    # Detach then re-append in reading order. Re-appending the same (extracted)
+    # nodes preserves all attributes/children; only their order changes.
+    for _, _, _, p in decorated:
+        p.extract()
+    for _, _, _, p in decorated:
+        container.append(p)
+
+    return soup
+
+
 def _merge_empty_consecutive(d: dict, is_empty: callable) -> dict:
     """
     Merge consecutive dict entries where first entry is empty.
@@ -694,7 +769,12 @@ def parse_pdf(
         combined_html = ""
         for page_soup in pages:
             cleaned_soup = _clean_page_headers(page_soup, drug_name)
-            combined_html += str(cleaned_soup)
+            # PyMuPDF can emit paragraphs out of reading order (e.g. right column
+            # before left, or a section banner after its content), which would
+            # make content appear before its governing H1/H2. Restore reading
+            # order before concatenating so parse_drug_pages sees linear content.
+            ordered_soup = _reorder_reading_order(cleaned_soup)
+            combined_html += str(ordered_soup)
 
         # Parse the concatenated HTML as a single document
         combined_soup = BeautifulSoup(combined_html, "html.parser")
