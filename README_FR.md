@@ -140,7 +140,7 @@ uv run stahl_ankifier.py votre_pdf_stahl.pdf --no-include-images
 
 ### Sortie
 
-Le script génère un fichier `.apkg` (par exemple, `stahl_drugs_v2.3.0.apkg`) qui peut être importé directement dans Anki.
+Le script génère un fichier `.apkg` (par exemple, `stahl_drugs_v4.1.0.apkg`) qui peut être importé directement dans Anki.
 
 Le paquet résultant contient environ **787 cartes** et fait environ **57 Mo** (y compris les images des pages sources).
 
