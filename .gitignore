@@ -1,6 +1,10 @@
 .aider*
 .env*
+__pycache__
 
 *.pdf
 *.apkg
+*.json
 *.html
+
+recreate_apkg.sh
