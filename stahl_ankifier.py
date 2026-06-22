@@ -361,6 +361,16 @@ def parse_drug_pages(
         # Look for span elements that might indicate headers
         span = p.find("span")
         if not span:
+            # PyMuPDF wraps every text run in a <span>, so a span-less paragraph
+            # normally carries no extractable text and is safe to skip. If one does
+            # contain text, skipping it would silently drop content (it can be neither
+            # a header nor stored as content below), so crash to surface it instead.
+            spanless_text = p.get_text(strip=True)
+            if spanless_text:
+                raise ValueError(
+                    "Found a paragraph with no <span> but with text content, which "
+                    f"would be silently skipped. Paragraph text: {spanless_text!r}"
+                )
             continue
 
         style = span.get("style", "")
