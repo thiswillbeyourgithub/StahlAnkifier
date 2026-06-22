@@ -497,16 +497,26 @@ def parse_drug_pages(
         if current_h1 and current_h2:
             # Store the HTML content as a string
             drug_dict[current_h1][current_h2].append(str(p))
+        elif current_h1:
+            # Content under an H1 section but before any H2 sub-header. Some
+            # sections place content directly under the banner with no bold
+            # sub-header (e.g. the depot/decanoate formulation property tables in
+            # long-acting antipsychotic monographs, which are small 7pt tables).
+            # Attach it to a synthetic H2 keyed by the H1 name so the content is
+            # preserved as a card rather than dropped (or crashing the parser).
+            orphan_text = p.get_text(strip=True)
+            if orphan_text:
+                drug_dict[current_h1].setdefault(current_h1, []).append(str(p))
         else:
-            # We reached real content with no active H1/H2 section to attach it to,
-            # which means content appeared before the first section header (or before
-            # the first sub-header inside a section). Silently dropping it would lose
-            # data, so crash on any non-whitespace text to surface the parsing gap for
-            # investigation. Whitespace-only paragraphs are harmless and ignored.
+            # We reached real content with no active H1 section to attach it to,
+            # which means content appeared before the very first section header.
+            # Reading-order reordering should prevent this, so any non-whitespace
+            # text here is a genuine parsing gap: crash to surface it rather than
+            # silently losing data. Whitespace-only paragraphs are ignored.
             orphan_text = p.get_text(strip=True)
             if orphan_text:
                 raise ValueError(
-                    "Found content with no active H1/H2 section to attach it to "
+                    "Found content with no active H1 section to attach it to "
                     f"(current_h1={current_h1!r}, current_h2={current_h2!r}); this "
                     f"would be lost. Paragraph text: {orphan_text!r}"
                 )
