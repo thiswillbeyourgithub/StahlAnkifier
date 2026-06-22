@@ -52,6 +52,7 @@ De cette façon, toute personne possédant le livre peut bénéficier des cartes
   - Suppression à trous simple enveloppant la réponse entière (`--format singlecloze`)
   - Une suppression à trous par ligne, toutes utilisant c1 (`--format onecloze`)
   - Multi-suppressions à trous avec numérotation séquentielle par ligne (`--format multicloze`)
+  - Ou générez-les tous (plus un export JSON) à partir d'une seule analyse avec `--format all`
 - **Référence visuelle** : Inclut optionnellement les images des pages sources sur chaque carte. Le texte intégral de chaque page est intégré dans l'attribut title de l'image, rendant tout le contenu directement consultable dans le navigateur d'Anki
 - **Formatage intelligent** :
   - Préserve le formatage important (gras, italique, liens)
@@ -74,7 +75,7 @@ Le script installera automatiquement toutes les dépendances requises lors de la
 Si vous préférez installer les dépendances manuellement :
 
 ```bash
-pip install fire==0.7.1 pymupdf==1.26.4 beautifulsoup4==4.14.2 loguru==0.7.3 tqdm==4.67.1 genanki==0.13.1 Pillow==12.0.0
+pip install pymupdf==1.26.4 beautifulsoup4==4.14.2 loguru==0.7.3 tqdm==4.67.1 genanki==0.13.1 Pillow==12.0.0
 ```
 
 ## Utilisation
@@ -105,6 +106,29 @@ uv run stahl_ankifier.py votre_pdf_stahl.pdf --format onecloze
 ```bash
 uv run stahl_ankifier.py votre_pdf_stahl.pdf --format multicloze
 ```
+
+### Tout générer en une seule fois
+
+Le PDF n'est analysé qu'une seule fois, vous pouvez donc produire tous les
+paquets (plus un export JSON des cartes extraites) en une seule exécution au
+lieu de réanalyser pour chaque format :
+
+```bash
+uv run stahl_ankifier.py votre_pdf_stahl.pdf --format all
+```
+
+Cela écrit `stahl_drugs_v<VERSION>.apkg` (basique) ainsi que
+`stahl_drugs_v<VERSION>_singlecloze.apkg`, `_onecloze.apkg`, `_multicloze.apkg`
+et `cards_dump.json`. Le script utilitaire `recreate_apkg.sh` est un simple
+wrapper autour de cette commande.
+
+Pour seulement exporter les cartes extraites en JSON (sans construire de `.apkg`) :
+
+```bash
+uv run stahl_ankifier.py votre_pdf_stahl.pdf --format json
+```
+
+(Utilisez `--dump-json <chemin>` avec n'importe quel format pour également écrire le JSON vers un chemin personnalisé.)
 
 ### Exclure les images de pages
 
