@@ -243,10 +243,14 @@ def _merge_bullet_paragraphs(html_content: str) -> str:
             # Single paragraph, keep as is
             merged_paragraphs.append(str(group[0]))
         else:
-            # Multiple paragraphs, merge their content
-            # Extract text from each paragraph and join with a space
-            merged_text = " ".join(p.get_text(strip=True) for p in group)
-            merged_paragraphs.append(f"<p>{merged_text}</p>")
+            # Multiple paragraphs, merge their inner HTML (not plain text).
+            # decode_contents() keeps inline formatting tags (<b>, <i>, <a>) intact.
+            # Using get_text() here would both strip those tags AND drop the spaces
+            # around them: get_text joins adjacent text nodes with an empty separator,
+            # so e.g. "Clinical <b>Trials</b>" collapses to "ClinicalTrials".
+            # Each source <p> is one wrapped line, so a single space rejoins the lines.
+            merged_inner = " ".join(p.decode_contents().strip() for p in group)
+            merged_paragraphs.append(f"<p>{merged_inner}</p>")
 
     return "".join(merged_paragraphs)
 
