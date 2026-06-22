@@ -405,6 +405,19 @@ def parse_drug_pages(
         if current_h1 and current_h2:
             # Store the HTML content as a string
             drug_dict[current_h1][current_h2].append(str(p))
+        else:
+            # We reached real content with no active H1/H2 section to attach it to,
+            # which means content appeared before the first section header (or before
+            # the first sub-header inside a section). Silently dropping it would lose
+            # data, so crash on any non-whitespace text to surface the parsing gap for
+            # investigation. Whitespace-only paragraphs are harmless and ignored.
+            orphan_text = p.get_text(strip=True)
+            if orphan_text:
+                raise ValueError(
+                    "Found content with no active H1/H2 section to attach it to "
+                    f"(current_h1={current_h1!r}, current_h2={current_h2!r}); this "
+                    f"would be lost. Paragraph text: {orphan_text!r}"
+                )
 
     # Merge consecutive headers where the first one has no content
     # This handles cases where headers appear back-to-back without content between them
